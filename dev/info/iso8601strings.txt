@@ -1,0 +1,16 @@
+Strings:
+	YYYY
+	YYYY-MM
+	YYYY-MM-DD
+	
+	hh
+	hh:mm
+	hh:mm:ss
+
+
+	YYYY
+	YYYYMMDD
+
+	hh
+	hhmm
+	hhmmss

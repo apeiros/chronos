@@ -1,0 +1,21 @@
+TODO
+================
+
+* General
+	* Document ::from
+	* Implement ::floats
+
+* RGB
+	* interpolate, default value for pos (.c)
+
+* HSV
+	* to_rgb (.rb)
+
+* Mixer
+	* Document almost all methods, note capped vs. modulo'd
+
+* Named
+	* Document ::new
+
+* Term
+	* Document ::from, ::new, #alpha

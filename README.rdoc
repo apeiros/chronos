@@ -1,0 +1,41 @@
+= README for color
+
+== Synopsis
+  require 'color'
+  red = Color::RGB.new(255,0,0) # verbose
+  red = Color.rgb(255,0,0)      # small shortcut
+
+  include Color
+  red = RGB.new(255,0,0) # include is nice
+  red = rgb(255,0,0)     # color creation methods are module functions
+
+== About
+Color is a collection of classes to deal with colors. To
+create, compare, store and manipulate them.
+
+All classes representing a color model are immutable. This is to
+simplify things. However, if you want to dynamically change things,
+there is Color::Mixer. It has accessors to all attributes in most
+color models. All attributes are mutable. That makes it ideal to
+manipulate color.
+
+== Named Colors
+At the moment, all names for named colors are taken from wikipedia.
+See links: Color names.
+
+== Developer Notes
+If some method is not documented, it is probably documented in Color::Common
+and the method in the current class is just either the native method or an optimized
+one.
+All conversion methods in Color::Common are based upon conversion to rgb and then to
+the target. That means if you want to_* methods from Color::Common, you must implement
+#to_rgb.
+
+= Links
+* Color names http://en.wikipedia.org/wiki/List_of_colors
+* Color models
+	* RGB http://en.wikipedia.org/wiki/RGB_color_model
+	* HSV http://en.wikipedia.org/wiki/HSV_color_space
+	* HSL http://en.wikipedia.org/wiki/HSL_color_space
+	* CMYK http://en.wikipedia.org/wiki/CMYK_color_model
+* Math behind transformations without color management http://www.easyrgb.com/math.html

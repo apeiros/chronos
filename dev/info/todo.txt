@@ -1,0 +1,128 @@
+Datetime (partially):
+	format, missing:
+		%c - The preferred local date and time representation
+		%U - Week  number  of the current year,
+			 starting with the first Sunday as the first
+			 day of the first week (00..53)
+		%x - Preferred representation for the date alone, no time
+		%X - Preferred representation for the time alone, no date
+		%Z -> timezone
+	format, incomplete:
+
+Datetime (methods):
+	# access this objects attributes
+	timezone=
+	language= # ISO 639-1? also see ISO 3166
+	
+	# calculate other datetimes from this date
+	+(interval/duration/timespan/numeric(seconds)) # lhs timezone and language are kept
+	-(interval/duration/timespan/numeric(seconds)) # lhs timezone and language are kept
+	next([:day, :<weekday>, :week, :month, :year], step=1, [until]) { |date| }
+	current(...see next...)
+	previous(...see next...)
+	after(duration/timespan)
+	before(duration/timespan)
+	duration(between_other_datetime)
+	timespan(between_other_datetime)
+
+	# other operations
+	-(datetime) => interval
+	
+	# via includes
+	sunrise
+	sunset
+
+
+
+
+Datetime (testcases):
+	# create instance, date[time]
+	Datetime.now(timezone=nil) # datetime with date and time
+	Datetime.today # datetime only date
+	Datetime.civil(year, month, day_of_month, [Datetime.time params])
+	Datetime.ordinal(year, day_of_year, [Datetime.time params])
+	Datetime.commercial(year, week, day_of_week, [Datetime.time params])
+	
+	# create an instance, time
+	Datetime.time(hour, minute=0, second=0, fraction=0, timezone=nil) # fraction can be provided via second too
+	Datetime.seconds(seconds, timezone=nil)
+	Datetime.epoch(unix_epoch_time, timezone=nil)
+	
+	# access this objects attributes
+	year
+	month
+	week
+	day_number
+	day_of_year
+	day_of_month
+	day_of_week
+	day_name
+	hour
+	minute
+	second
+	fraction
+	offset
+	timezone
+	timezone=
+	language
+	language= # ISO 639-1? also see ISO 3166
+	
+	# representation
+	format # similar to strftime
+	
+	# calculate other datetimes from this date
+	+(interval/duration/timespan/numeric(seconds)) # lhs timezone and language are kept
+	-(interval/duration/timespan/numeric(seconds)) # lhs timezone and language are kept
+	next([:day, :<weekday>, :week, :month, :year], step=1, [until]) { |date| }
+	current(...see next...)
+	previous(...see next...)
+	after(duration/timespan)
+	before(duration/timespan)
+	duration(between_other_datetime)
+	timespan(between_other_datetime)
+	date # datetime stripped of this instances time
+	time # datetime stripped of this instances date
+	
+	# other operations
+	-(datetime) => interval
+	<=>(datetime) => -1,0,1
+	
+	
+	
+	# via includes
+	sunrise
+	sunset
+	
+	
+	
+	# FORMAT
+	%c - The preferred local date and time representation
+	%U - Week  number  of the current year,
+		 starting with the first Sunday as the first
+		 day of the first week (00..53)
+	%x - Preferred representation for the date alone, no time
+	%X - Preferred representation for the time alone, no date
+	
+	
+	uppercase: time
+	lowercase: date
+	%%: % sign
+	
+	%a -> monthname, %3a -> first 3 letters of the name, %-3a -> last 3 letters
+	%b -> dayname, %3b -> first 3 letters of the name
+	%y -> year, 4 digits, (%-2y -> last 2 digits, %2y -> first 2 digits) 0000..9999
+	%m -> month, 1 or 2 digits, (%02m -> always 2 digits, 0 padded, %2m -> space padded) 01..12
+	%d -> day of month (same as %m) 01..31
+	%j -> day of year (same as %m) 001..366
+	%k -> day of week, 0=monday, 6=sunday, %+k -> 1..7, %2k -> 2=monday
+	%w -> week of year (iso 8601) 01..53
+	
+	%H -> hour of day (same as %m), 00..23
+	%I -> hour of day (same as %m), 01..12
+	%M -> minute of hour (same as %m) 00..59
+	%S -> second of minute (same as %m) 00..59
+	%O -> offset in format ±HHMM
+	%Z -> timezone
+	%P -> meridian indicator (AM/PM)
+	
+	%% - Literal % character

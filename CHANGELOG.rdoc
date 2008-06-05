@@ -1,0 +1,27 @@
+= 0.0.4
+=== 7th July, 2007
+
+* Improved C code (thanks to chris2)
+* Added default value for alpha in ::floats methods
+* Fixed a typo in mixer.rb
+
+= 0.0.3
+=== 7th July, 2007
+
+* Added documentation to .rb files
+* Moved +/- for most classes to Color::Common
+* Improved Rakefile
+* Basic implementation of Color::Named
+* Added as_floats argument to #to_hash methods
+* Added ::floats to most color classes
+
+= 0.0.2
+=== 6th July, 2007
+
+* Fixed Color::Common#with
+* Corrected the Rakefile
+
+= 0.0.1
+=== 6th July, 2007
+
+* Initial release of the color classes implemented in C and Ruby.

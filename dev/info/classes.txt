@@ -1,0 +1,84 @@
+Datetime:
+	Description:
+		Immutable representation of a date and/or a time.
+		A Datetime is determined by the offset of seconds and days from a day and
+		time 0.
+		The representation additionally takes DST and Timezone and language into
+		account.
+		See Differences Datetime/Calendar
+
+	Synopsis:
+		datetime = Datetime.civil(year, month, day).at(hour, min, sec).in(timezone, language)
+		datetime += some_duration # immutable, datetime is now a new object
+		datetime.year
+
+Calendar:
+	Description:
+		A mutable Datetime, optimized for unsurprising operations on components
+		of the Calendar object. For example Datetime#+(<Interval>) will take
+		things like DST, and leap seconds into account which can lead to unexpected
+		results. E.g. if you add 2 days to a date 1 day before DST, the represented
+		time will change.
+		See Differences Datetime/Calendar
+		
+	Synopsis:
+		cal = Calendar.civil(year, month, day)
+		cal.day += 10
+		puts cal.format
+		cal.month += 5
+
+Differences Datetime/Calendar
+	Examples:
+		(Datetime.civil(2005,12,31).at(23,0)+1.hour).year # => 2005
+		What happened? 2005, the last minute has 61 seconds due to a leap second, so
+		the last hour has 3601 seconds. So adding 1 hour to that Datetime ends up in
+		2005-12-31 23:59:60
+		cal = Calendar.civil(2005,12,31).at(23,0)
+		cal.hour += 1
+		cal.year # => 2006
+
+
+Duration:
+	Description:
+		A Duration is defined by seconds and months, it is a span in time unrelated
+		to a begin or end. As in: "it takes 10 seconds to do that"
+		Naturally a Duration containing months can't precisely be expressed
+		as days, as the count of days of a month depends on what month it actually
+		is.
+
+Interval:
+	Description:
+		An Interval is determined by a Start and End, it is a span in time.
+		Unlike Duration the amount of days/seconds the months are determined.
+		An Interval can be converted to a Duration to allow arithmetic operations
+		with Datetimes.
+		For arithmetic operations with Numerics and Durations you have to define
+		the fixed end. Per default start is fixed.
+
+Zone:
+	Description:
+		The zone contains information about the timezone used. That is at least
+		the offset in seconds to UTC. Other (optional) data includes:
+		country, dst-rule, longitude, lattitude, language
+		Be aware that Calendar and Datetime ignore all information but the offset
+		(you might only speak english and have your holiday in Russia - you wouldn't
+		want your dates in russian just because of the zone you're in)
+
+Parse:
+	Description:
+		Actually a module. Placeholder for all kinds of parsers to parse dates,
+		times, datetimes, intervals, recurrings.
+
+Methods all should implement:
+	::_load       --> Marshal
+	#dump         --> Marshal
+	#hash         --> Hash
+	#eql?         --> Hash
+	#inspect      --> p/irb
+	#pretty_print --> pp
+	#===          --> case
+	#to_s         --> "#{self}"
+	#to_a         --> *self (ruby 1.8)
+	#to_splash    --> *self (ruby 1.9)
+	#dup
+	#initialize_copy

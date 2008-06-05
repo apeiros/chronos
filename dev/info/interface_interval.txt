@@ -1,0 +1,44 @@
+Interval, class methods
+	between(a, b)
+	new(begin, end)
+
+Interval, instance methods
+	seconds               # 0..Inf,  Integer
+	seconds_after_minutes # 0...60,  Integer
+	minutes               # 0..Inf,  Rational (seconds included)
+	minutes_after_hours   # 0...60,  Rational (seconds included)
+	hours                 # 0..Inf,  Rational (minutes and seconds included)
+	hours_after_days      # 0...24,  Rational (minutes and seconds included)
+	days                  # 0..Inf,  Rational (minutes and seconds included)
+	days_after_weeks      # 0...7,   Rational (smaller units included)
+	days_after_months     # 0...31,  Rational (smaller units included)
+	days_after_years      # 0...366, Rational (smaller units included)
+	weeks                 # 0..Inf,  Rational (smaller units included)
+	weeks_after_months    # 0..5,    Rational (smaller units included)
+	months                # 0..Inf,  total months, Integer
+	months_after_years    # 0...12,  Integer
+	years                 # 0..Inf,  Rational (months included)
+	
+	+(duration)
+	-(duration)
+	*(numeric)
+	/(numeric)
+	fix_begin
+	fix_end
+	fixed
+	begin
+	end
+	to_duration
+	to_hash
+	to_a
+	to_s
+	
+Interval, use cases
+	determine how many days until certain event
+	=> (event-now).days.floor
+	determine how old somebody is
+	=> (now-birthsday).years.floor
+	in human terms the difference between two dates
+	=> (a-b).to_s # => "3 years, 2 months and 1 day"
+	determine the datetime in the middle of two datetimes
+	=> ((a-b)/2).end

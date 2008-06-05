@@ -1,0 +1,86 @@
+first and last day in a 365d year are the same
+first day + 1 = last day in a leap year
+
+1st week of next year:
+	yeardays - day of year <= 2 && day of week <= 2
+
+last week of last year:
+	day of year <= 3 && day of week >= 4
+	day of year <= 3: first week of the year is the first having >=4 days
+	                  in that year. if it is 4th day of the year, the week
+	                  would guaranteedly have 4 days in this year and thus be
+	                  the first week of that year -> not last week of last year
+	day of week >= 4: if it is < 4, the week of that day has its thursday in this
+	                  year, which is another definition
+
+last year has 53 weeks if
+
+365 (first day of week this year: previous year):
+	sunday,    6: 5 -> 52w (1-1)
+	saturday,  5: 4 -> 52w (1-2)
+	friday,    4: 3 -> 53w (1-3)
+	thursday,  3: 2 -> 1w  (all)
+	wednesday, 2: 1 -> 1w  (all)
+	tuesday,   1: 0 -> 1w  (all)
+	monday,    0: 6 -> 1w  (all)
+	
+366 (previous):
+	sunday,    6: 4 -> 52w (1-1)
+	saturday,  5: 3 -> 53w (1-2)
+	friday,    4: 2 -> 53w (1-3)
+	thursday,  3: 1 -> 1w  (all)
+	wednesday, 2: 0 -> 1w  (all)
+	tuesday,   1: 6 -> 1w  (all)
+	monday,    0: 5 -> 1w  (all)
+
+
+364d = 52w
+371d = 53w
+
+1.1.x, thu, leap?(x) == false
+	365+3 = 368
+	31.12.x, thu
+	368+3 = 371 -> 53w
+
+1.1.x, fri, leap?(x) == false
+	365-3 = 362
+	31.12.x, fri
+	362+2 = 364 -> 52w
+
+1.1.x, sat, leap?(x) == false
+	365-2 = 363
+	31.12.x, sat
+	363+1 = 364 -> 52w
+
+1.1.x, wed, leap?(x) == true
+	366+2 = 368
+	31.12.x, thur
+	368+3 = 371 -> 53w
+
+1.1.x, thu, leap?(x) == true
+	366+3 = 369
+	31.12.x, fri
+	369+2 = 371 -> 53w
+
+1.1.x, fri, leap?(x) == true
+	366-3 = 363
+	31.12.x, sat
+	363+1 = 364 -> 52w
+	
+offset:
+	monday:     0
+	tuesday:    1 (1 day more)
+	wednesday:  2
+	thursday:   3
+	friday:    -3
+	saturday:  -2
+	sunday:    -1
+
+1-0 / 7 = 0
+2-0 / 7 = 0
+3-0 / 7 = 0
+4-0 / 7 = 0
+5-0 / 7 = 0
+6-0 / 7 = 0
+7-0 / 7 = 1
+8-0 / 7 = 0

@@ -1,0 +1,64 @@
+Internally interval values are stored as months, days, and seconds.
+This is done because the number of days in a month varies, and a day can
+have 23 or 25 hours if a daylight savings time adjustment is involved.
+Because intervals are usually created from constant strings or timestamp
+subtraction, this storage method works well in most cases.
+Functions justify_days and justify_hours are available for adjusting days and
+hours that overflow their normal periods.
+>>http://www.postgresql.org/docs/8.2/interactive/datatype-datetime.html
+
+Rational() is fast, but fails with unpredictable input (e.g. Rational(Float, Float))
+preference is hence #quo, additional advantage: doesn't require 'rational'
+
+
+Interval, instance methods
+	seconds               # 0..Inf,  Integer
+		# seconds + seconds_in_months
+	seconds_after_minutes # 0...60,  Integer
+		# seconds + seconds_in_months % 60
+	minutes               # 0..Inf,  Rational (seconds included)
+		# seconds + seconds_in_months quo 60
+	minutes_after_hours   # 0...60,  Rational (seconds included)
+		# seconds + seconds_in_months quo 60 % 60
+	hours                 # 0..Inf,  Rational (minutes and seconds included)
+		# seconds + seconds_in_months quo 3600
+	hours_after_days      # 0...24,  Rational (minutes and seconds included)
+		# seconds + seconds_in_months quo 3600 % 24
+	days                  # 0..Inf,  Rational (minutes and seconds included)
+		# seconds + seconds_in_months quo 86400
+	days_after_weeks      # 0...7,   Rational (smaller units included)
+		# seconds + seconds_in_months quo 86400 % 7
+	days_after_months     # 0...31,  Rational (smaller units included)
+		# seconds quo 86400
+	days_after_years      # 0...366, Rational (smaller units included)
+		# seconds + seconds_in_months - seconds_in_years quo 86400
+	weeks                 # 0..Inf,  Rational (smaller units included)
+		# seconds + seconds_in_months quo 604800
+	weeks_after_months    # 0...5,    Rational (smaller units included)
+		# days_after_months quo 7
+	weeks_after_years     # 0...53
+		# days_after_years quo 7
+	months                # 0..Inf,  total months, Integer
+		# months
+	months_after_years    # 0...12,  Integer
+		# months % 12
+	years                 # 0..Inf,  Rational (months included)
+		# months quo 12
+	
+	+(duration)
+	-(duration)
+	*(numeric)
+	/(numeric)
+	fix_begin
+	fix_end
+	fixed
+	begin
+	end
+	to_duration
+	to_hash
+	to_a
+	to_s
+	
+	
+2007-03-02 - 2006-12-31 ==> 2 months, 3 days
+2007-02-28 - 2006-12-31 vs. 2007-03-02 - 2007-01-02 vs. 2007-03-01 - 2007-01-01
