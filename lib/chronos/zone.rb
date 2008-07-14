@@ -16,6 +16,7 @@ module Chronos
 	)
 	class Zone
 		ZonesFile = File.join(File.dirname(__FILE__),"data","zones.tab")
+		ZonesData = File.join(File.dirname(__FILE__),"data","zones.marshal")
 		@by_name   = {}
 		@by_region = {}
 
@@ -144,5 +145,3 @@ module Chronos
 		end
 	end
 end
-
-load(File.dirname(__FILE__)+"/../../test/chronos/tc_"+File.basename(__FILE__)) if __FILE__ == $0

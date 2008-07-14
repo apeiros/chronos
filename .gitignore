@@ -1,0 +1,10 @@
+.svn
+.DS_Store
+/coverage
+/conflicts
+/unversioned
+/trunk/docs
+/trunk/pkg
+/trunk/web
+/silverplatter-irc.xcodeproj
+/build/
