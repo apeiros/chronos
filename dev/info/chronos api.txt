@@ -1,0 +1,167 @@
+Integer
+	#leap_year?   # is this year a leapyear?
+	#leap_seconds # number of leap_seconds in this year
+	#picoseconds  # => Duration
+	#nanoseconds  # => Duration
+	#microseconds # => Duration
+	#milliseconds # => Duration
+	#seconds      # => Duration
+	#minutes      # => Duration
+	#hours        # => Duration
+	#days         # => Duration
+	#weeks        # => Duration
+	#months       # => Duration
+	#years        # => Duration
+
+Chronos:
+	Past   # Artificial date that always lies in the past
+	Future # Artificial date that always lies in the future
+
+Datetime:
+	::from_time(Time)                    # from ruby time classes
+	::from_date(Date/DateTime)           # from ruby date classes
+	::new(day_number, nanosecond_number)
+
+	#day_number
+	#nanosecond_number
+	#offset
+	#offset_dst
+	#offset_timezone
+	#timezone
+
+	#enumerate(duration, stop=nil) # => Enumerator
+
+	#date?
+	#time?
+	#datetime?
+	
+	#<=>(Datetime)
+	#+(Duration/Interval)          # => Datetime
+	#+(Datetime)          # => only allowed to add a date? to a time?
+	#-(Duration/Interval) # => Datetme
+	#-(Datetime)          # => Interval
+	
+	#strip_date
+	#strip_time
+	#in(timezone)
+	#to_datetime
+	#to_timestamp
+
+Datetime::Gregorian
+	include Comparable
+
+	::parse(string, format=nil, language=nil)
+	::iso_8601(string)
+	::xml(string)
+	::_load(string) (Marshal)
+	::weeks(year) # how many weeks does this year have?
+	::civil(year, month, day, h,m,s,tz)
+	::ordinal(year, dayofyear, h,m,s,tz)
+	::commercial(year, week, dayofweek, h,m,s,tz)
+	::today
+	::now
+	
+	#year                    # => Integer
+	#month                   # => Integer (1-12)
+	#day_of_month (aka #day) # => Integer (1-31)
+	#week                    # => Integer (0-53)
+	#commercial_week         # => Integer (0-52)
+	#day_of_week             # => Integer (0-6)
+	#day_of_year             # => Integer (1-366)
+	#hour                    # => Integer (0-23)
+	#minute                  # => Integer (0-59)
+	#second                  # => Integer (0-59)
+	#millisecond             # => Integer (0-999)
+	#microsecond             # => Integer (0-999)
+	#nanosecond              # => Integer (0-999)
+	#picosecond              # => Integer (0-999)
+	
+	#weeks_in_year  # how many weeks this year has
+	#weeks_in_month # how many weeks this year has
+	#days_in_year   # how many days this year has
+	#day_in_month   # how many days this month has
+	
+	#monday?     # => true/false
+	#tuesday?    # => true/false
+	#wednesday?  # => true/false
+	#thursday?   # => true/false
+	#friday?     # => true/false
+	#saturday?   # => true/false
+	#sunday?     # => true/false
+	
+	#month_name(language=nil) # => String
+	#day_name(language=nil)   # => String
+	
+	#format                   # => String
+	#strftime                 # => String
+	
+	#end_of_month
+	#end_of
+	#with(values={})          # 
+	#at(hour, minute, second) # 
+	#on(year, month, day)     # 
+	#_dump                    # Marshal
+
+Enumerator:
+	include Enumerable
+	#each
+	#each_until
+	#size
+
+Duration:
+	::parse(string, format=nil, language=nil)
+	::iso_8601(string)
+	
+	#years
+	#months
+	#weeks
+	#days
+	#hours
+	#minutes
+	#seconds
+	
+	#enumerate(startdate=today) # 
+	
+	+(Datetime) # => Interval
+	+(Duration) # => Duration
+	-(Datetime) # => Interval
+	-(Duration) # => Duration
+
+Interval
+	#+(Interval) # => Interval, ! you can only add another interval if either start+end or end+start are the same !
+	#+(Duration) # => Interval
+
+Calendar:Gregorian
+	#year=
+	#month=
+	#day_of_month=
+	#week=
+	#day_of_week=
+	#day= (day_number, so you can do cal.day += 200)
+	#hour=
+	#minute=
+	#second=
+	#to_datetime
+
+Frequency
+
+format generics:
+	%?  - no leading zeros
+	%0? - leading zeros
+	% ? - leading spaces
+	%-? - prefix with - if negative
+	%+? - prefix with +/-
+	+/- and 0/<space> can be combined, e.g.
+	%+0?
+	
+	Example:
+	date.format("%0j")     # => "014"
+	duration.format("%+Ss") # => "+15s"
+
+Datetime#format
+	Y: year 4 digit
+	y: year 2 digit
+	m: month
+	w: week (ISO)
+	d: day of month
+	

@@ -1,0 +1,56 @@
+Use cases:
+	Date & Time:
+	a) Printing a date/time
+		* numbers without padding/leading zero
+		* numbers with padding
+		* numbers with leading zero
+		* different languages
+
+	b) Getting from a given date to a relative other date
+		*with knowing the difference (duration) in between
+		*with knowing parts of the other date, such as:
+			>"following friday"
+			>"monday 2 weeks later"
+			>"same day in a month"
+			>"last day of month"
+			>"the next nth day of the month"
+			
+			>"previous friday"
+			>"monday 2 weeks earlier"
+			>"same day a month ago"
+			>"the last nth day of the month
+
+	c) Getting an absolute date with relation to a given date
+		>"n days before end of this month"
+
+	d) Converting a serialized/string form of a date/time into a Datetime
+		>"date for '2001-02-03'"
+	e) Converting a partial serialized/string from of a date/time into a Datetime
+		>"date for '2001'"
+	f) Finding the difference between two dates
+		>"how many days are between 2001-02-13 and 2005-01-17"
+	g) iterating from a start to an end date in a given interval
+		>"every week from 2001-01-01 until 2002-01-01
+	h) iterate from a start while/until a condition is met in a given interval
+		>"every month until week > 10"
+
+	Duration:
+	a) Printing a duration
+		>"3d 02h 15m 02s"
+	b) Parsing a duration
+	c)
+	
+	Interval:
+	a) Get how much of a part it is
+	> "How many days (after years and months) are in the interval from 2001-02-13 and 2005-01-17"
+	b) Convert to total amount of a single entity
+	> "How many days are in the interval from 2001-02-13 and 2005-01-17"
+	c) Get all dates that satisfy a given condition
+	> "All saturdays between 2001-02-13 and 2005-01-17"
+
+Solutions:
+	a)
+		date.format("%Y-%0m-%0d %0H:%0M")
+	
+also look:
+	Perl: Date::Calc, Date::Manip

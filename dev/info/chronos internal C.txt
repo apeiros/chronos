@@ -1,0 +1,57 @@
+datetime struct {
+	daynumber   int64 (xffffffffffffffff = no date part)
+	picosecond  int64 (xffffffffffffffff = no time part)
+	timezone    int16
+	cache1      int32 see table below
+	cache2      int32 see table below
+	language    VALUE
+}
+
+timezone:
+	timezone_id     9bit (400 timezones)
+	timezone_offset 7bit (15min units)
+
+
+cache1:
+	has layout    1bit (true/false) (whether already Gregorian or another module uses the cache)
+	year         16bit 
+	month         4bit (1-12)
+	day_of_year   9bit (1-366)
+	day_of_week   3bit (0-6)
+	------------------
+	total        32bit
+
+cache2:
+	dst active    1bit (true/false)
+	week          6bit (0-53)
+	day_of_month  5bit (1-31)
+	hour          5bit (0-23)
+	minute        6bit (0-59)
+	second        6bit (0-60, leap second)
+	------------------
+	total        30bit
+
+
+Numbers:
+	total size of datetime: 30 bytes (thats less than 1/10 of DateTime)
+	total range: ±2.5e16 years around epoch (that's from before our universe existed up to in 25 quadrillion years)
+	resolution:  1ps is the smallest unit, that's 1e-12 second
+
+
+why two bare integers as cache?
+- better suited for those sub-byte values
+- masking + shifting is very fast, shouldn't impact much
+- enables use by non-gregorian by simply using another masking table
+
+
+
+duration struct {
+	months int32
+	days   int16
+	ps     int64
+}
+
+interval struct {
+	from  datetime
+	until datetime
+}
