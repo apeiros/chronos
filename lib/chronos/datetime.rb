@@ -12,6 +12,11 @@ require 'chronos'
 
 module Chronos
 
+
+	# Datetime represents singular points on a time axis which has its origin
+	# on backdated gregorian year 0, january 1st.
+	# A Datetime consists of the days and seconds since that origin.
+	#
 	# Example:
 	#   require 'chronos/gregorian'
 	#   date = Datetime.civil(year, month, day)
@@ -20,6 +25,20 @@ module Chronos
 	#   dtz = Datetime.civil(y, m, d).at(hour, min, sec).in("Europe/Zurich", "de-de")
 	#   datetime = Datetime.ordinal(year, day_of_year).at(0,0).in("UTC+1", "en-us")
 	class Datetime
+
+		Inspect = "#<%s daynumber=%p picosecondnumber=%p timezone=%p language=%p>".freeze
+
+		include Comparable
+		
+		# Delegate all methods to the current calendary 
+		def self.method_missing(*args, &block)
+			if klass = const_get(Chronos.calendar) then
+				klass.__send__(*args, &block)
+			else
+				super
+			end
+		end
+
 		# Convert a Date, DateTime or Time to Chronos::Datetime object
 		def self.import(obj, timezone=nil, language=nil)
 			case obj
@@ -33,12 +52,10 @@ module Chronos
 			end
 		end
 
-		include Comparable
-
 		# create a datetime with date and time part set to the current system time
 		# and date
 		def self.now(timezone=nil, language=nil)
-			Datetime.import(Time.now, timezone, language)
+			import(Time.now, timezone, language)
 		end
 
 		# create a datetime with only the date part set to the current system date
@@ -53,9 +70,9 @@ module Chronos
 		# for timezone/language append a .in(timezone, language) or set a global
 		# (see Chronos::Datetime)
 		def self.epoch(unix_epoch_time, timezone=nil, language=nil)
-			Time.at(unix_epoch_time).to_datetime(timezone, language)
+			import(Time.at(unix_epoch_time), timezone, language)
 		end
-		
+
 		# parses an ISO 8601 string
 		# this can be either date, time or date and time
 		# date parts must be fully qualified (year+month+day or year+day_of_year or
@@ -66,6 +83,7 @@ module Chronos
 			raise NoMethodError
 		end
 		
+		# Parses a String in form of the XML Schema Date format to a Datetime.
 		def self.xml_schema(string)
 			raise NoMethodError
 		end
@@ -96,6 +114,8 @@ module Chronos
 		attr_reader :timezone
 		# the language used to output names (weekday-names, month-names)
 		attr_reader :language
+
+		# Create a new datetime from daynumber, secondnumber, timezone and language
 		def initialize(day, second, timezone=nil, language=nil)
 			@day_number    = day ? day.round : nil
 			@second_number = second ? second.round : nil
@@ -548,30 +568,16 @@ module Chronos
 			end
 		end
 		
-		# prints the datetime as ISO-8601, examples:
-		# datetime: 2007-01-31T14:31:25-04:00
-		# date:     2007-01-31
-		# time:     14:31:25-04:00
-		def to_s
-			date = @day_number ? ("%04d-%02d-%02d" %  [year, month, day]) : ""
-			time = @second_number ? ("%02d:%02d:%02d-%02d:%02d" %  [hour, minute, second, *(offset/60).floor.divmod(60)]) : ""
-			"#{date}#{@day_number && @second_number ? 'T' : ''}#{time}"
-		end
-		
 		def inspect
-			date = @day_number ? ("%04d-%02d-%02d" %  [year, month, day]) : "no date"
-			time = @second_number ? ("%02d:%02d:%02d" %  [hour, minute, second]) : "no time"
-			"#<#{self.class} #{date} #{time} (#{@day_number.inspect}, #{@second_number.inspect})>"
-		end
-		
-		# :nodoc:
-		def hash
-			[@day_number, @second_number].hash
+			sprintf Inspect, "#<#{self.class} #{date} #{time} (#{@day_number.inspect}, #{@second_number.inspect})>"
 		end
 		
 		# :nodoc:
 		def eql?(other)
-			@day_number == other.day_number && @second_number == other.second_number
+			@second_number == other.second_number &&
+			@day_number    == other.day_number &&
+			@timezone      == other.timezone &&
+			@language      == other.language
 		end
 	end
 end
