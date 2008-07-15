@@ -1,0 +1,11 @@
+Calendar:Gregorian
+	#year=
+	#month=
+	#day_of_month=
+	#week=
+	#day_of_week=
+	#day= (day_number, so you can do cal.day += 200)
+	#hour=
+	#minute=
+	#second=
+	#to_datetime

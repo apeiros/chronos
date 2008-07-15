@@ -1,4 +1,17 @@
+#--
+# Copyright 2007-2008 by Stefan Rusterholz.
+# All rights reserved.
+# See LICENSE.txt for permissions.
+#++
+
+
+
+require 'chronos'
+
+
+
 module Chronos
+
 	# An immutable class representing a "floating" (independant of
 	# a start or end) period.
 	# A Durations months-count becomes determinated by adding it to or

@@ -1,0 +1,10 @@
+== Chronos
+
+Past    # Artificial Datetime that always lies in the past
+Future  # Artificial Datetime that always lies in the future
+Forever # Artificial Duration that is longer than ever other Duration
+Never   # Artificial Duration that is shorter than ever other Duration
+
+Datetime
+Duration
+Interval

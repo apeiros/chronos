@@ -1,0 +1,95 @@
+== Datetime::Gregorian
+include Comparable
+
+
+::parse(string, format=nil, language=nil)
+::iso_8601(string)
+::rfc2822(string)
+::rfc822(string)
+::xml_schema(string)
+::components(string)
+::weeks(year) # how many weeks does this year have?
+::civil(year, month, day, h,m,s,tz)
+::ordinal(year, dayofyear, h,m,s,tz)
+::commercial(year, week, dayofweek, h,m,s,tz)
+::time(hour, minute, second)
+::seconds(seconds, tz, language)
+::today(tz, language)
+::now(tz, language)
+
+#<=>(datetime)
+#+(duration)
+#-(duration_or_datetime)
+
+#at(hour, minute, second) # => Datetime
+#in(zone, language)       # => Datetime
+
+#civil_year (year)  # => Integer
+#commercial_year    # => Integer
+#month              # => Integer (1-12)
+#day_of_month (day) # => Integer (1-31)
+#week               # => Integer (0-53)
+#commercial_week    # => Integer (0-52)
+#day_of_week        # => Integer (0-6)
+#day_of_year        # => Integer (1-366)
+#hour               # => Integer (0-23)
+#minute             # => Integer (0-59)
+#second             # => Integer (0-59)
+#millisecond        # => Integer (0-999)
+#microsecond        # => Integer (0-999)
+#nanosecond         # => Integer (0-999)
+#picosecond         # => Integer (0-999)
+#offset             # => Duration
+#timezone           # ISO 639-1? also see ISO 3166
+#language           # ...?...
+
+#weeks_in_year  # how many weeks this year has
+#weeks_in_month # how many weeks this year has
+#days_in_year   # how many days this year has
+#days_in_month  # how many days this month has
+
+#monday?     # => true/false
+#tuesday?    # => true/false
+#wednesday?  # => true/false
+#thursday?   # => true/false
+#friday?     # => true/false
+#saturday?   # => true/false
+#sunday?     # => true/false
+
+#month_name(language=nil) # => String
+#day_name(language=nil)   # => String
+
+#format                   # => String
+#strftime                 # => String
+
+#end_of_month
+#end_of
+#with(values={})          # 
+#at(hour, minute, second) # 
+#on(year, month, day)     # 
+
+#to_time
+#to_hash
+#to_a
+
+-----
+	succeeding(unit, step, upper_limit, &block)
+	current(unit, at, &block)
+	previous(unit, step, lower_limit, &block)
+
+	leap_year?
+
+	
+	strip_date
+	strip_time
+	
+	datetime?
+	date?
+	time?
+	date_only?
+	time_only?
+
+# calculate other datetimes from this date
+next([:day, :<weekday>, :week, :month, :year], step=1, [until]) { |date| }
+current(...see next...)
+previous(...see next...)

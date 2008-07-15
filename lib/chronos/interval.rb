@@ -1,4 +1,13 @@
+#--
+# Copyright 2007-2008 by Stefan Rusterholz.
+# All rights reserved.
+# See LICENSE.txt for permissions.
+#++
+
+
+
 module Chronos
+
 	# An Interval is determinated by a start and an end Datetime.
 	# Unlike in Duration, this allows to determine the months part exactly in
 	# seconds (and therefore minutes, hours, days, weeks).

@@ -1,0 +1,15 @@
+== Integer
+
+#leap_year?   # is this year a leapyear?
+#leap_seconds # number of leap_seconds in this year
+#picoseconds  # => Duration
+#nanoseconds  # => Duration
+#microseconds # => Duration
+#milliseconds # => Duration
+#seconds      # => Duration
+#minutes      # => Duration
+#hours        # => Duration
+#days         # => Duration
+#weeks        # => Duration
+#months       # => Duration
+#years        # => Duration

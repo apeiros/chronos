@@ -1,0 +1,18 @@
+== Duration
+* ::parse(string, format=nil, language=nil)
+* ::iso_8601(string)
+
+* #years
+* #months
+* #weeks
+* #days
+* #hours
+* #minutes
+* #seconds
+
+* #enumerate(startdate=today) # 
+
+* +(Datetime) # => Interval
+* +(Duration) # => Duration
+* -(Datetime) # => Interval
+* -(Duration) # => Duration

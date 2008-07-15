@@ -1,21 +1,7 @@
-TODO
-================
+= BUGS
 
-* General
-	* Document ::from
-	* Implement ::floats
 
-* RGB
-	* interpolate, default value for pos (.c)
+= TODO
 
-* HSV
-	* to_rgb (.rb)
 
-* Mixer
-	* Document almost all methods, note capped vs. modulo'd
-
-* Named
-	* Document ::new
-
-* Term
-	* Document ::from, ::new, #alpha
+= UNHAPPY

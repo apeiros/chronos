@@ -1,13 +1,17 @@
-# day 536870912 = 2000-01-01, that leaves us another 1.4mio years with Fixnum
-# italian calendar reform: 536718529 (536870912-152383, 1582-10-15)
+#--
+# Copyright 2007-2008 by Stefan Rusterholz.
+# All rights reserved.
+# See LICENSE.txt for permissions.
+#++
 
-# years that start with thursday have 53 weeks
-# leap years that start with wednesday have 53 weeks
-# commercial years start always on mondays
+
 
 require 'chronos'
 
+
+
 module Chronos
+
 	# Example:
 	#   require 'chronos/gregorian'
 	#   date = Datetime.civil(year, month, day)
@@ -16,66 +20,25 @@ module Chronos
 	#   dtz = Datetime.civil(y, m, d).at(hour, min, sec).in("Europe/Zurich", "de-de")
 	#   datetime = Datetime.ordinal(year, day_of_year).at(0,0).in("UTC+1", "en-us")
 	class Datetime
-		include Comparable
-
-		# FIXME (remove all the unless defined? after irb testing)
-		DAYS_IN_MONTH1    = [0,31,28,31,30,31,30,31,31,30,31,30,31] unless defined? DAYS_IN_MONTH1
-		DAYS_IN_MONTH2    = [0,31,29,31,30,31,30,31,31,30,31,30,31] unless defined? DAYS_IN_MONTH2
-		DAYS_UNTIL_MONTH1 = [0,31,59,90,120,151,181,212,243,273,304,334,365] unless defined? DAYS_UNTIL_MONTH1
-		DAYS_UNTIL_MONTH2 = [0,31,60,91,121,152,182,213,244,274,305,335,366] unless defined? DAYS_UNTIL_MONTH2
-		# symbol => index (reverse map for succ/current/previous)
-		DAY_OF_WEEK = {
-			:monday     => 0,
-			:tuesday    => 1,
-			:wednesday  => 2,
-			:thursday   => 3,
-			:friday     => 4,
-			:saturday   => 5,
-			:sunday     => 6,
-		} unless defined? DAY_OF_WEEK
-		# 0 = monday
-		DAY_NAME         = %w(
-			Monday
-			Tuesday
-			Wednesday
-			Thursday
-			Friday
-			Saturday
-			Sunday
-		) unless defined? DAY_NAME
-		MONTH_NAME         = %w(
-			January
-			February
-			March
-			April
-			May
-			June
-			July
-			August
-			September
-			October
-			November
-			December
-		) unless defined? MONTH_NAME
-
-		# returns whether or not given year is a leapyear
-		def self.leap?(year)
-			((year%4).zero? && !(year%100).zero?) || (year%400).zero?
-		end
-		
-		# returns the number of days in a given month for a given year
-		def self.days_in_month(month, year=nil)
-			if month == 2 && year && leap?(year) then
-				29
-			else
-				DAYS_IN_MONTH1[month]
+		# Convert a Date, DateTime or Time to Chronos::Datetime object
+		def self.import(obj, timezone=nil, language=nil)
+			case obj
+				when ::Time
+					time  = utc
+					value = Chronos::Datetime.civil(time.year, time.month, time.day).
+																		at(time.hour, time.min, time.sec, time.to_f%1)
+					(timezone || language) ? value.in(timezone, language) : value
+				when ::Date
+				when ::DateTime
 			end
 		end
+
+		include Comparable
 
 		# create a datetime with date and time part set to the current system time
 		# and date
 		def self.now(timezone=nil, language=nil)
-			Time.now.to_datetime(timezone, language)
+			Datetime.import(Time.now, timezone, language)
 		end
 
 		# create a datetime with only the date part set to the current system date
@@ -84,52 +47,6 @@ module Chronos
 		def self.today
 			now = Time.now
 			ordinal(now.year, now.yday)
-		end
-
-		# create a datetime with date part only from year, month and day_of_month
-		# for timezone/language append a .in(timezone, language) or set a global
-		# (see Chronos::Datetime)
-		def self.civil(year, month, day_of_month)
-			# calculate how many days passed until this year
-			leap  = leap?(year)
-			raise ArgumentError, "Invalid month (#{year}-#{month}-#{day_of_month})" if month < 1 or month > 12
-			raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
-			year  = year.to_f
-			leaps = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
-			doy   = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+day_of_month
-			new(year*365+leaps+doy, nil, nil)
-		end
-
-		# see Datetime#format
-		# for timezone/language append a .in(timezone, language) or set a global
-		# (see Chronos::Datetime)
-		def self.commercial(year, week, day_of_week, year_is_commercial=true)
-			fdy = year*365+(year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil+1
-			if year_is_commercial then
-				fwd = (fdy+4)%7
-				off = (10-fwd)%7-3
-				new(fdy+off+(week-1)*7+day_of_week, nil, nil)
-			else
-				#fwd = (fdy+4)%7 # first day of years weekday
-				#off = (10-fwd)%7-3   # calculate offset of the first week
-				#new(fdy+off+week*7+day_of_week, nil, nil)
-			end
-		end
-
-		# create a datetime with date part only from year and day_of_year
-		# for timezone/language append a .in(timezone, language) or set a global
-		# (see Chronos::Datetime)
-		def self.ordinal(year, day_of_year)
-			leaps = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
-			new(year*365+leaps+day_of_year, nil, nil)
-		end
-
-		# create a datetime with time part only from hour, minute, second,
-		# fraction of second (alternatively you can use a float as second)
-		# for timezone/language append a .in(timezone, language) or set a global
-		# (see Chronos::Datetime)
-		def self.time(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
-			new(nil,hour*3600+minute*60+second+fraction, timezone=nil, language=nil)
 		end
 
 		# create a datetime with date and time part from a unix-epoch-stamp
@@ -146,7 +63,11 @@ module Chronos
 		# this is in here too to be consistent with Datetime#to_s, for other parsers
 		# see Chronos::Parse
 		def self.iso_8601(string)
-			components(Parse.iso_8601(string))
+			raise NoMethodError
+		end
+		
+		def self.xml_schema(string)
+			raise NoMethodError
 		end
 		
 		# from a hash with components, mainly intended for parsers
@@ -626,105 +547,6 @@ module Chronos
 				Time.local(*items)
 			end
 		end
-
-		# format(string, language, timezone)
-		# format datetime, similar to strftime. Format strings can contain:
-		#   %a: monthname, can be formatted like %s in sprintf
-		#   %b: dayname, can be formatted like %s in sprintf
-		#   %y: year, 4 digits (0000..9999)
-		#       %-2y: last 2 digits
-		#       %2y:  first 2 digits
-		#   %m: month of year, 1..31, can be formatted as %d in sprintf
-		#   %d: day of month, 1..31, can be formatted as %d in sprintf
-		#   %j: day of year, 1..366, can be formatted as %d in sprintf
-		#   %k: day of week, 0=monday, 6=sunday
-		#       %+k: 1..7 (changes range from 0..6 to 1..7)
-		#       %2k: 0=saturday, 2=monday, 6=friday
-		#       %+2k: 1=saturday, 3=monday, 7=friday
-		#   %w: week of year (iso 8601) 1..53, can be formatted as %d in sprintf
-		#
-		#   %H: hour of day, 0..23, can be formatted as %d in sprintf
-		#   %I: hour of day, 1..12, can be formatted as %d in sprintf
-		#   %M: minute of hour 0..59, can be formatted as %d in sprintf
-		#   %S: second of minute, 0..59, can be formatted as %d in sprintf
-		#   %O: offset in format ±HHMM
-		#   %Z: timezone
-		#   %P: meridian indicator (AM/PM)
-		#
-		#   %%: Literal % character
-		def format(string=nil, language=nil)
-			unless string
-				if !@day_number then
-					string = "%02H:%02M:%02S"
-				elsif !@second_number then
-					string = "%04y-%02m-%02d"
-				else
-					string = "%04y-%02m-%02d %02H:%02M:%02S"
-				end
-			end
-
-			string.gsub(/%(%|\{[^}]\}|.*?[A-Za-z])/) { |m|
-				case m[-1,1]
-					when '{'
-						call,*args = *m[2..-2].split(",")
-						call       = c.to_sym
-						args.map! { |arg|
-							if arg[0,1] == ":" then
-								arg[1..-1].to_sym
-							elsif arg =~ /\A\d+\z/ then
-								Integer(arg)
-							else
-								Float(arg)
-							end
-						}
-
-						respond_to?(call)
-						send(call, *args)
-					when 'a'
-						"#{m[0..-2]}s"%month_name
-					when 'b'
-						"#{m[0..-2]}s"%day_name
-					when 'y'
-						s = "%04d"%year
-						if m.length > 2 then
-							o = m[1..-2].to_i
-							o > 0 ? s[0,o] : s[o..-1]
-						else
-							s
-						end
-					when 'm'
-						"#{m[0..-2]}d"%month
-					when 'd'
-						"#{m[0..-2]}d"%day_of_month
-					when 'j'
-						"#{m[0..-2]}d"%day_of_year
-					when 'k'
-						dow = day_of_week
-						dow = (dow+m[-2,1].to_i)%7 if (m[-2,1] =~ /\d/)
-						dow += 1 if (m[1,1] == "+")
-						dow
-					when 'w'
-						"#{m[0..-2]}d"%week
-
-					when 'H'
-						"#{m[0..-2]}d"%hour
-					when 'I'
-						"#{m[0..-2]}d"%(hour%12+1)
-					when 'M'
-						"#{m[0..-2]}d"%minute
-					when 'S'
-						"#{m[0..-2]}d"%second
-					when 'O'
-						"%s%02d%02d"%[@offset < 0 ? "-" : "+",@offset.div(3600),@offset.div(60)%60]
-					when 'Z'
-						"FIXME"
-					when 'P'
-						hour <= 12 ? "AM" : "PM"
-					when '%'
-						"%"
-				end
-			}
-		end
 		
 		# prints the datetime as ISO-8601, examples:
 		# datetime: 2007-01-31T14:31:25-04:00
@@ -753,16 +575,3 @@ module Chronos
 		end
 	end
 end
-
-class Time
-	# convert to Chronos::Datetime object in given timezone and language
-	# current Time objects timezone is respected
-	def to_datetime(timezone=nil, language=nil)
-		time  = utc
-		value = Chronos::Datetime.civil(time.year, time.month, time.day).
-		                          at(time.hour, time.min, time.sec, time.to_f%1)
-		(timezone || language) ? value.in(timezone, language) : value
-	end
-end
-
-load(File.dirname(__FILE__)+"/../../test/chronos/tc_"+File.basename(__FILE__)) if __FILE__ == $0

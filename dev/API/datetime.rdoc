@@ -1,0 +1,46 @@
+== Datetime
+
+::import(Time|Date|DateTime)         # from old ruby date/time classes
+::from_date(Date/DateTime)           # from ruby date classes
+::epoch(unix_epoch_timestamp)        
+::new(day_number, nanosecond_number) 
+
+#day_number
+#nanosecond_number
+#offset
+#offset_dst
+#offset_timezone
+#timezone
+
+#enumerate(duration, stop=nil) # => Enumerator
+
+#date?
+#time?
+#datetime?
+
+#<=>(Datetime)
+#+(Duration/Interval) # => Datetime
+#+(Datetime)          # => only allowed to add a date? to a time?
+#-(Duration/Interval) # => Datetme
+#-(Datetime)          # => Interval
+
+#strip_date
+#strip_time
+#in(timezone)
+#to_datetime
+#to_timestamp
+
+#export(Time|Date|DateTime)
+
+-----
+# other operations
++(interval/duration/timespan/numeric(seconds)) # lhs timezone and language are kept
+-(interval/duration/timespan/numeric(seconds)) # lhs timezone and language are kept
+-(datetime) => interval
+<=>(datetime) => -1,0,1
+duration(between_other_datetime)
+timespan(between_other_datetime)
+after(duration/timespan)
+before(duration/timespan)
+date # datetime stripped of this instances time
+time # datetime stripped of this instances date

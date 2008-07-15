@@ -1,0 +1,22 @@
+== Environment
+
+Language:: Chronos looks up in the following places and escalates to the next if nil:
+	* @language
+	* Thread[:language]
+	* $language
+	* ENV['language']
+
+Chronos will at require time lookup various ENV variables  and $language and normalize
+it in Chronos.language. If Chronos.language isn't set explicitly (via Chronos.language=)
+then Chronos will trace $language and reflect it in Chronos.language.
+
+Timezone:: Chronos looks up in the following places and escalates to the next if nil:
+	* @timezone
+	* Thread[:timezone]
+	* $timezone
+	* EVN['timezone']
+
+Chronos will at require time lookup various ENV variables and $timezone and normalize it
+in Chronos.timezone. If Chronos.timezone isn't set explicitly (via Chronos.timezone=)
+then Chronos will trace $timezone and reflect it in Chronos.language.
+

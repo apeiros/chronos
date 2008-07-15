@@ -1,0 +1,4 @@
+== Unassigned methods
+sunrise:: Get the datetime with the current day's time set to sunrise
+sunset::  Get the datetime with the current day's time set to sunset
+easter::  Get the datetime with the current date's month and day set to easter

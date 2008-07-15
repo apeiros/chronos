@@ -2,3 +2,6 @@ better method names:
 	ahead
 	comming
 	succeeding
+	following
+	next
+
