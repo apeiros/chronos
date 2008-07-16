@@ -1,3 +1,0 @@
-fixed:
-	day_name no longer depends on day_of_week
-	
