@@ -26,14 +26,12 @@ module Chronos
 			ISO_8601_Time     = "%02d:%02d:%02d-%02d:%02d".freeze
 			Inspect           = "#<%s %s (%p, %p)>".freeze
 
+			DAYS_IN_MONTH1    = [0,31,28,31,30,31,30,31,31,30,31,30,31].freeze
+			DAYS_IN_MONTH2    = [0,31,29,31,30,31,30,31,31,30,31,30,31].freeze
+			DAYS_UNTIL_MONTH1 = [0,31,59,90,120,151,181,212,243,273,304,334,365].freeze
+			DAYS_UNTIL_MONTH2 = [0,31,60,91,121,152,182,213,244,274,305,335,366].freeze
 
-			# FIXME (remove all the unless defined? after irb testing)
-			DAYS_IN_MONTH1    = [0,31,28,31,30,31,30,31,31,30,31,30,31]
-			DAYS_IN_MONTH2    = [0,31,29,31,30,31,30,31,31,30,31,30,31]
-			DAYS_UNTIL_MONTH1 = [0,31,59,90,120,151,181,212,243,273,304,334,365]
-			DAYS_UNTIL_MONTH2 = [0,31,60,91,121,152,182,213,244,274,305,335,366]
 			# symbol => index (reverse map for succ/current/previous)
-
 			DAY_OF_WEEK = {
 				:monday     => 0,
 				:tuesday    => 1,
@@ -42,20 +40,11 @@ module Chronos
 				:friday     => 4,
 				:saturday   => 5,
 				:sunday     => 6,
-			} unless defined? DAY_OF_WEEK
+			}.freeze
 	
-			# returns whether or not given year is a leapyear
-			def self.leap?(year)
-				((year%4).zero? && !(year%100).zero?) || (year%400).zero?
-			end
-			
 			# returns the number of days in a given month for a given year
 			def self.days_in_month(month, year=nil)
-				if month == 2 && year && leap?(year) then
-					29
-				else
-					DAYS_IN_MONTH1[month]
-				end
+				(year.leap_year? ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1).at(month)
 			end
 	
 			# create a datetime with date and time part set to the current system time
@@ -77,7 +66,7 @@ module Chronos
 			# (see Chronos::Datetime)
 			def self.civil(year, month, day_of_month)
 				# calculate how many days passed until this year
-				leap  = leap?(year)
+				leap  = year.leap_year?
 				raise ArgumentError, "Invalid month (#{year}-#{month}-#{day_of_month})" if month < 1 or month > 12
 				raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 				year  = year.to_f
@@ -233,7 +222,7 @@ module Chronos
 			# this method calculates @day_of_month and @month from @day_number - only used internally
 			def month_and_day_of_month # :nodoc:
 				raise NoDatePart unless @day_number
-				lookup        = Datetime.leap?(year) ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1
+				lookup        = year.leap_year? ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1
 				doy           = day_of_year()
 				month         = (day_of_year/31.0).ceil
 				@month        = lookup[month] < doy ? month + 1 : month
@@ -242,8 +231,8 @@ module Chronos
 			end
 	
 			# returns whether or not the year of this date is a leap-year
-			def leap?
-				Datetime.leap?(year)
+			def leap_year?
+				year.leap_year?
 			end
 	
 			# the gregorian year of this date (only limited by memory)
@@ -307,7 +296,7 @@ module Chronos
 					if doy <= 3 && doy <= 7-fwd then  # last week of last year
 						case fwd
 							when 6: 52
-							when 5: Datetime.leap?(year-1) ? 53 : 52
+							when 5: (year-1).leap_year? ? 53 : 52
 							when 4: 53
 							else    1
 						end
@@ -315,7 +304,7 @@ module Chronos
 						off  = (10-fwd)%7-2   # calculate offset of the first week
 						week = (doy-off).div(7)+1
 						if week > 52 then
-							week = (fwd == 3 || (leap? && fwd == 2)) ? 53 : 1
+							week = (fwd == 3 || (leap_year? && fwd == 2)) ? 53 : 1
 						end
 						week
 					end
@@ -324,7 +313,7 @@ module Chronos
 			
 			def weeks
 				fwd  = (@day_number+@overflow-day_of_year+5)%7         # calculate weekday of first day in year
-				(fwd == 3 || (leap? && fwd == 2)) ? 53 : 52
+				(fwd == 3 || (leap_year? && fwd == 2)) ? 53 : 52
 			end
 	
 			# this dates day of month (if it has a date part)
@@ -448,7 +437,7 @@ module Chronos
 						when :month
 							overflow, month = *(month()-1+step.floor).divmod(12)
 							year   = (year()+overflow).to_f
-							leap   = Datetime.leap?(year)
+							leap   = year.leap_year?
 							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month+1]
 							leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 							doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month]+day_of_month
@@ -456,7 +445,7 @@ module Chronos
 						when :year
 							month = month()
 							year  = (year()+step.floor).to_f
-							leap  = Datetime.leap?(year)
+							leap  = year.leap_year?
 							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 							leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 							doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+day_of_month
@@ -501,7 +490,7 @@ module Chronos
 					when :month
 						month  = at.floor
 						year   = year().to_f
-						leap   = Datetime.leap?(year)
+						leap   = year.leap_year?
 						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month+1]
 						leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 						doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month]+day_of_month
@@ -509,7 +498,7 @@ module Chronos
 					when :year
 						month = month()
 						year  = at.floor.to_f
-						leap  = Datetime.leap?(year)
+						leap  = year.leap_year?
 						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 						leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 						doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+day_of_month
@@ -648,7 +637,7 @@ module Chronos
 						string = "%04y-%02m-%02d %02H:%02M:%02S"
 					end
 				end
-	
+
 				string.gsub(/%(%|\{[^}]\}|.*?[A-Za-z])/) { |m|
 					case m[-1,1]
 						when '{'
@@ -711,7 +700,7 @@ module Chronos
 					end
 				}
 			end
-			
+
 			# prints the datetime as ISO-8601, examples:
 			# datetime: 2007-01-31T14:31:25-04:00
 			# date:     2007-01-31
@@ -727,7 +716,7 @@ module Chronos
 					sprintf ISO_8601_Time, hour, minute, second, *(offset/60).floor.divmod(60)
 				end
 			end
-			
+
 			def inspect
 				sprintf Inspect,
 					self.class,

@@ -2,6 +2,9 @@
 
 
 = TODO
-
+* Lazy loading of strings/parsers/formatters
+* 
 
 = UNHAPPY
+* DateTime#strftime("%Z") does not indicate if it's in a timezone with active DST or not,
+  so importing a DateTime and importing a Time will give different results.

@@ -23,8 +23,6 @@ module Chronos
 		:longitude_iso
 	)
 	class Zone
-		ZonesFile = File.join(File.dirname(__FILE__),"data","zones.tab")
-		ZonesData = File.join(File.dirname(__FILE__),"data","zones.marshal")
 		@by_name   = {}
 		@by_region = {}
 
@@ -127,11 +125,14 @@ module Chronos
 			'MIKE'     => [:'UTC+12',   false]
 		})
 		
-		# read locations
-		def self.read_locations
-			File.open(ZonesFile, "r") { |fh|
-				fh.gets
-				while (line = fh.gets)
+		# load locations from a tabfile
+		def self.load(tabfile, marshalfile=nil, marshal=true)
+			if marshalfile && File.readable?(marshalfile) && File.mtime(tabfile) <= File.mtime(marshalfile) then
+				@by_name.update(Marshal.load(File.read(marshalfile)))
+			else
+				data = {}
+				File.foreach(tabfile) { |line|
+					next if line[0] == ?#
 					tmp                    = line.chomp.split("\t")
 					tmp[3,0]               = 0
 					location               = new(*tmp)
@@ -142,12 +143,17 @@ module Chronos
 					location.longitude     = Float(location.longitude) rescue nil
 					location.latitude_iso  = Integer(location.latitude_iso) rescue nil
 					location.longitude_iso = Integer(location.longitude_iso) rescue nil
-					@by_name[location.timezone_id.downcase] = location
+					data[location.timezone_id.downcase] = location
+				}
+				@by_name.update(data)
+				if marshalfile && marshal then
+					File.open(marshalfile, "wb") { |fh|
+						fh.write(Marshal.dump(data))
+					}
 				end
-			}
+			end
 		end
-		read_locations
-
+		
 		def self.[](by_name)
 			@by_name[by_name.downcase]
 		end
