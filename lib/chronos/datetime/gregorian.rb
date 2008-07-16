@@ -28,11 +28,12 @@ module Chronos
 
 
 			# FIXME (remove all the unless defined? after irb testing)
-			DAYS_IN_MONTH1    = [0,31,28,31,30,31,30,31,31,30,31,30,31] unless defined? DAYS_IN_MONTH1
-			DAYS_IN_MONTH2    = [0,31,29,31,30,31,30,31,31,30,31,30,31] unless defined? DAYS_IN_MONTH2
-			DAYS_UNTIL_MONTH1 = [0,31,59,90,120,151,181,212,243,273,304,334,365] unless defined? DAYS_UNTIL_MONTH1
-			DAYS_UNTIL_MONTH2 = [0,31,60,91,121,152,182,213,244,274,305,335,366] unless defined? DAYS_UNTIL_MONTH2
+			DAYS_IN_MONTH1    = [0,31,28,31,30,31,30,31,31,30,31,30,31]
+			DAYS_IN_MONTH2    = [0,31,29,31,30,31,30,31,31,30,31,30,31]
+			DAYS_UNTIL_MONTH1 = [0,31,59,90,120,151,181,212,243,273,304,334,365]
+			DAYS_UNTIL_MONTH2 = [0,31,60,91,121,152,182,213,244,274,305,335,366]
 			# symbol => index (reverse map for succ/current/previous)
+
 			DAY_OF_WEEK = {
 				:monday     => 0,
 				:tuesday    => 1,
@@ -42,30 +43,6 @@ module Chronos
 				:saturday   => 5,
 				:sunday     => 6,
 			} unless defined? DAY_OF_WEEK
-			# 0 = monday
-			DAY_NAME         = %w(
-				Monday
-				Tuesday
-				Wednesday
-				Thursday
-				Friday
-				Saturday
-				Sunday
-			) unless defined? DAY_NAME
-			MONTH_NAME         = %w(
-				January
-				February
-				March
-				April
-				May
-				June
-				July
-				August
-				September
-				October
-				November
-				December
-			) unless defined? MONTH_NAME
 	
 			# returns whether or not given year is a leapyear
 			def self.leap?(year)

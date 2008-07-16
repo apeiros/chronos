@@ -1,0 +1,76 @@
+---
+:monthname:
+  - january
+  - february
+  - march
+  - april
+  - may
+  - june
+  - july
+  - august
+  - september
+  - october
+  - november
+  - december
+:monthnameshort:
+  - jan
+  - feb
+  - mar
+  - apr
+  - may
+  - jun
+  - jul
+  - aug
+  - sep
+  - oct
+  - nov
+  - dec
+:dayname:
+  - monday
+  - tuesday
+  - wednesday
+  - thursday
+  - friday
+  - saturday
+  - sunday
+:daynameshort:
+  - mo
+  - tu
+  - we
+  - th
+  - fr
+  - sa
+  - su
+:picosecond:
+  ~: picoseconds
+  1: picosecond
+:nanosecond:
+  ~: nanoseconds
+  1: nanosecond
+:microsecond:
+  ~: microseconds
+  1: microsecond
+:millisecond:
+  ~: milliseconds
+  1: millisecond
+:second:
+  ~: seconds
+  1: second
+:minute:
+  ~: minutes
+  1: minute
+:hour:
+  ~: hours
+  1: hour
+:day:
+  ~: days
+  1: day
+:week:
+  ~: weeks
+  1: week
+:month:
+  ~: months
+  1: month
+:year:
+  ~: years
+  1: year
