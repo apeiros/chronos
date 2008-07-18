@@ -1,7 +1,9 @@
 = Chronos
 
-
 == Indexing
+Name::             Chronos
+Gem::              chronos
+Summary::          Library to deal with Date, Time, Durations and Intervals.
 Author::           Stefan Rusterholz <stefan.rusterholz+chronos at gmail.com>
 Version::          0.1.0
 Website::          http://chronos.rubyforge.org/
@@ -9,10 +11,6 @@ Git Repository::   http://github.com/apeiros/chronos
 Bugtracker::       
 Feature Requests:: 
 License::          Ruby License (see LICENSE.txt)
-
-
-== Summary
-Library to deal with Date, Time, Durations and Intervals.
 
 == Description
 Chronos is a library that lets you easily deal with various kinds of calcutations
@@ -65,10 +63,11 @@ Note: you might have to use 'sudo rake gem:install'
 
 
 == Examples
-
 See in the examples dir for code examples.
 
 
 == Design
+
+
 
 == Links

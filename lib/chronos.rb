@@ -22,6 +22,23 @@ require 'yaml'
 
 
 
+# == Summary
+# 
+# == Synopsis
+#
+# == Description
+#
+# == Duck typing
+# All chronos classes will accept in places of
+# Datetime:: objects that respond to to_datetime (careful as this collides with date's Time#to_datetime, you have to explicitly import them)
+# Duration:: objects that respond to to_duration
+# Interval:: objects that respond to to_interval
+# Calendar:: objects that respond to to_calendar
+#
+# For classes that don't have those methods you can try Klassname::import.
+# For example
+#   Chronos::Datetime.import(Time.now) # => Chronos::Datetime
+#
 module Chronos
 	YAMLExt           = '.yaml'.freeze
 	ZonesFile         = File.join(File.dirname(__FILE__), "chronos", "data", "zones.tab").freeze
@@ -42,8 +59,6 @@ module Chronos
 	@strings = {}
 
 	class <<self
-		attr_reader :language
-		attr_reader :timezone
 		attr_reader :calendar
 		
 		def string(lang, key, quantity=nil)
@@ -77,12 +92,33 @@ module Chronos
 		
 		# Set the default language to use with Chronos classes (parsing/printing)
 		def language=(value)
-			@language = normalize_language(value).dup.freeze
+			@language = normalize_language(value)
 		end
 
 		# Set the default timezone to use with Chronos classes
 		def timezone=(value)
-			@language = normalize_timezone(value).dup.freeze
+			@language = normalize_timezone(value)
+		end
+		def timezone(tz=nil)
+			case tz
+				when Chronos::Zone
+					tz
+				when NilClass
+					@timezone
+				else
+					normalize_timezone(tz)
+			end
+		end
+		
+		def timezone(tz=nil)
+			case tz
+				when Chronos::Zone
+					tz
+				when NilClass
+					@timezone
+				else
+					normalize_timezone(tz)
+			end
 		end
 		
 		# Set the calendar system Chronos should use. You can also just require

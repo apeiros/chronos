@@ -2,9 +2,17 @@
 
 
 = TODO
+* Switch @second_number to @ps_number
+* Change testcases to bacon specs
+* Validate Datetime API
+* Refactor Duration and Interval (Gregorian)
 * Lazy loading of strings/parsers/formatters
 * 
 
 = UNHAPPY
 * DateTime#strftime("%Z") does not indicate if it's in a timezone with active DST or not,
   so importing a DateTime and importing a Time will give different results.
+* Added complexity supporting different calendar systems brings. I'd like to make that complexity invisible
+  in the common use case where you just use Gregorian.
+  Examples: Chronos::Datetime(class methods)
+* date adds Time#to_datetime which collides with Chronos' ducktyping.

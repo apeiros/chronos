@@ -20,3 +20,7 @@ require 'chronos/interval/gregorian'
 
 
 Chronos.use :Gregorian
+Datetime = Chronos::Datetime::Gregorian
+Duration = Chronos::Duration::Gregorian
+Interval = Chronos::Interval::Gregorian
+Calendar = Chronos::Calendar::Gregorian
