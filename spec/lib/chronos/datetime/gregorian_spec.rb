@@ -1,15 +1,24 @@
-tried = false
-begin
-	require 'test/unit'
-	require 'chronos'
-	require 'date'
-rescue LoadError
-	raise if tried
-	$:.unshift(File.expand_path(File.dirname(__FILE__)+'/../../lib'))
-	tried = true
-	retry
+unless $LOADED_FEATURES.include?('bacon_helper.rb')
+	load(File.expand_path("#{__FILE__}/../../../../bacon_helper.rb"))
+	$LOADED_FEATURES << 'bacon_helper.rb'
 end
 
+require 'time'
+require 'date'
+require 'chronos/datetime/gregorian'
+
+describe 'Chronos::Datetime::Gregorian.iso_8601' do
+	it 'should parse all valid formats correctly' do
+		[
+			'2001-12-31T09:41:29+02:00'
+		].each { |format|
+			proc { Chronos::Datetime::Gregorian.iso_8601(format) }.should.not.raise
+			Chronos::Datetime::Gregorian.iso_8601(format).should.be.kind_of Chronos::Datetime::Gregorian
+		}
+	end
+end
+
+__END__
 class TestDatetime < Test::Unit::TestCase
 	Dt = Chronos::Datetime
 

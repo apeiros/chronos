@@ -89,7 +89,8 @@ module Chronos
 		
 		# Normalize the timezone to something Chronos can work with (or raise)
 		def normalize_timezone(val) # :nodoc:
-			Zone[val.upcase]
+			raise ArgumentError, "Could not normalize timezone #{val.inspect}" unless zone = Zone[val]
+			zone
 		end
 		
 		# Set the default language to use with Chronos classes (parsing/printing)

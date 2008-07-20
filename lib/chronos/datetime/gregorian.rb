@@ -42,55 +42,51 @@ module Chronos
 				:sunday     => 6,
 			}.freeze
 	
+			# convert hours, minutes, seconds and fraction to picoseconds required by ::new
+			def self.picoseconds(hour, minute, second, fraction=nil)
+				(hour*3600+minute*60+second+(fraction||0))*1_000_000_000_000
+			end
+
 			# returns the number of days in a given month for a given year
 			def self.days_in_month(month, year=nil)
 				(year.leap_year? ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1).at(month)
+			end
+			
+			# returns the number of days since origin
+			# TODO: check with negative years
+			# TODO: use integer arithmetic only instead (divmod + test for zero)
+			def self.days_since(year)
+				year*365+(year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 			end
 	
 			# create a datetime with date part only from year, month and day_of_month
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.civil(year, month, day_of_month)
-				# calculate how many days passed until this year
-				leap  = year.leap_year?
-				raise ArgumentError, "Invalid month (#{year}-#{month}-#{day_of_month})" if month < 1 or month > 12
-				raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
-				year  = year.to_f
-				leaps = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
-				doy   = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+day_of_month
-				new(year*365+leaps+doy, nil, nil)
+				components(year, month, nil, nil, day_of_month, nil, nil, nil, nil)
 			end
 	
 			# see Datetime#format
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.commercial(year, week, day_of_week, year_is_commercial=true)
-				fdy = year*365+(year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil+1
-				if year_is_commercial then
-					fwd = (fdy+4)%7
-					off = (10-fwd)%7-3
-					new(fdy+off+(week-1)*7+day_of_week, nil, nil)
-				else
-					#fwd = (fdy+4)%7 # first day of years weekday
-					#off = (10-fwd)%7-3   # calculate offset of the first week
-					#new(fdy+off+week*7+day_of_week, nil, nil)
-				end
+				raise ArgumentError, "Non commercial years are not yet supported" unless year_is_commercial
+				components(year, nil, week, nil, nil, day_of_week, nil, nil, nil)
 			end
 	
 			# create a datetime with date part only from year and day_of_year
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.ordinal(year, day_of_year)
-				leaps = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
-				new(year*365+leaps+day_of_year, nil, nil)
+				components(year, nil, nil, day_of_year, nil, nil, nil, nil, nil)
 			end
-	
+
 			# create a datetime with time part only from hour, minute, second,
 			# fraction of second (alternatively you can use a float as second)
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.time(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
-				new(nil,hour*3600+minute*60+second+fraction, timezone=nil, language=nil)
+			def self.at(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
+				new(nil,picoseconds(h,m,s,f), timezone=nil, language=nil)
 			end
 			
 			# parses an ISO 8601 string
@@ -99,20 +95,100 @@ module Chronos
 			# year+week+day_of_week)
 			# this is in here too to be consistent with Datetime#to_s, for other parsers
 			# see Chronos::Parse
-			def self.iso_8601(string)
-				components(Parse.iso_8601(string))
+			def self.iso_8601(string, language=nil)
+				# date & time
+				if string.include?('T') then
+					case string
+						#       (year          )   (month )   (day    )     hour       minute     second fraction      timezone
+						when /\A(-?\d\d|-?\d{4})(?:-?(\d\d)(?:-?(\d\d))?)?T(\d\d)(?::?(\d\d)(?::?(\d\d(?:\.\d+)?)?)?)?(Z|[-+]\d\d:\d\d)?\z/
+							year   = $1.to_i
+							month  = $2.to_i
+							day    = $3.to_i
+							ps     = picoseconds($4.to_i, $5.to_i, $6.include?('.') ? $6.to_f : $6.to_i)
+							zone   = $7
+							components(year, month, nil, nil, day, nil, ps, zone, language)
+						when /\A(-?\d\d|-?\d{4})(?:-?W(\d\d)(?:-?(\d))?)?T(\d\d)(?::?(\d\d)(?::?(\d\d(?:\.\d+)?)?)?)?(Z|[-+]\d\d:\d\d)?\z/
+							year   = $1.to_i
+							week   = $2.to_i
+							day    = $3.to_i
+							ps     = picoseconds($4.to_i, $5.to_i, $6.include?('.') ? $6.to_f : $6.to_i)
+							zone   = $7
+							components(year, nil, week, nil, nil, day, ps, zone, language)
+						when /\A(-?\d\d|-?\d{4})(?:-?(\d{3}))?T(\d\d)(?::?(\d\d)(?::?(\d\d(?:\.\d+)?)?)?)?(Z|[-+]\d\d:\d\d)?\z/
+							year   = $1.to_i
+							day    = $2.to_i
+							ps     = picoseconds($3.to_i, $4.to_i, $5.include?('.') ? $5.to_f : $5.to_i)
+							zone   = Chronos.timezone($6)
+							components(year, nil, nil, day, nil, nil, ps, zone, language)
+					end
+				# date | time
+				else
+					case string
+						when //
+							components()
+					end
+				end
 			end
 			
-			# from a hash with components, mainly intended for parsers
-			# parts for dates must either be all or none set, time are all optional, others
-			# also.
+			# Create a Datetime::Gregorian from parts.
+			# Intended for constructors (parsers e.g.).
+			def self.components(year, month, week, dayofyear, dayofmonth, dayofweek, ps_number, timezone, language)
+				now        = Time.now
+				day_number = nil
+
+				# has date
+				if year || month || week || dayofyear || dayofmonth || dayofweek then
+					year ||= now.year
+
+					# year-month-day_of_month
+					if (month || dayofmonth) then
+						month      ||= 1
+						dayofmonth ||= 1
+						# calculate how many days passed until this year
+						leap  = year.leap_year?
+						raise ArgumentError, "Invalid month (#{year}-#{month}-#{day_of_month})" if month < 1 or month > 12
+						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{dayofmonth})" if dayofmonth > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
+						doy   = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+dayofmonth
+						day_number = days_since(year)+doy
+
+					# year-week-day_of_week
+					elsif (week || dayofweek) then
+						week      ||= 1
+						dayofweek ||= 1
+						fdy         = days_since(year)+1
+						fwd         = (fdy+4)%7
+						off         = (10-fwd)%7-3
+						day_number  = fdy+off+(week-1)*7+dayofweek
+					
+					# year-day_of_year
+					else
+						dayofyear ||= 1
+						day_number   = days_since(year)+dayofyear
+					end
+				end # has date
+				new(day_number, ps_number, timezone, language)
+			end
+			
+			# Slower than components() but more convenient.
 			# parts for dates: :year, (:month, :day[_of_month] | :week, :day[_of_week] | :day[_of_year])
 			# parts for time: :hour, :minute, :second, :fraction, :usec, (:offset | :timezone)
 			# other parts: :language
-			def self.components(components)
-				raise NoMethodError
+			def self.named_components(components)
+				components(components.values_at(
+					:year,
+					:month,
+					:week,
+					:day_of_year,
+					:day_of_month,
+					:day_of_week,
+					:picosecond,
+					:timezone,
+					:language
+				))
 			end
 	
+
+
 			# add a/modify the time component to/of a date only datetime
 			def at(hour, minute=0, second=0, fraction=0.0)
 				overflow, second = *(hour*3600+minute*60+second+fraction-@timezone.offset).divmod(86400)
