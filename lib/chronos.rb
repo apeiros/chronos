@@ -16,7 +16,7 @@ require 'chronos/datetime'
 require 'chronos/duration'
 require 'chronos/exceptions'
 require 'chronos/interval'
-require 'chronos/strings'
+require 'chronos/ruby'
 require 'chronos/zone'
 require 'yaml'
 
@@ -52,6 +52,7 @@ module Chronos
 		:minute,
 		:hour,
 		:day,
+		:week,
 		:month,
 		:year
 	].freeze
@@ -60,6 +61,7 @@ module Chronos
 
 	class <<self
 		attr_reader :calendar
+		attr_reader :strings
 		
 		def string(lang, key, quantity=nil)
 			if quantity then
@@ -71,8 +73,8 @@ module Chronos
 
 		# Load a yaml strings file
 		def load_strings(strfile, language)
-			data = YAML.load_file(name)
-			Defaultize.each do |key|
+			data = YAML.load_file(strfile)
+			DefaultizeStrings.each do |key|
 				data[key] = Hash.new(data[key].delete(nil)).merge(data[key])
 			end
 			@strings[language] ||= {}
@@ -87,7 +89,7 @@ module Chronos
 		
 		# Normalize the timezone to something Chronos can work with (or raise)
 		def normalize_timezone(val) # :nodoc:
-			val.upcase
+			Zone[val.upcase]
 		end
 		
 		# Set the default language to use with Chronos classes (parsing/printing)
@@ -97,7 +99,7 @@ module Chronos
 
 		# Set the default timezone to use with Chronos classes
 		def timezone=(value)
-			@language = normalize_timezone(value)
+			@timezone = normalize_timezone(value)
 		end
 		def timezone(tz=nil)
 			case tz
@@ -110,14 +112,12 @@ module Chronos
 			end
 		end
 		
-		def timezone(tz=nil)
-			case tz
-				when Chronos::Zone
-					tz
+		def language(lang=nil)
+			case lang
 				when NilClass
-					@timezone
+					@language
 				else
-					normalize_timezone(tz)
+					normalize_language(lang)
 			end
 		end
 		
@@ -131,14 +131,18 @@ module Chronos
 			@calendar = calendar_system
 		end
 	end
-
-	self.language = ENV['LANG'] || 'en_US'
-	self.timezone = Time.now.strftime("%Z")
-	@calendar     = nil
 	
 	Zone.load(ZonesFile, ZonesData, false)
 	Dir.glob("#{File.dirname(__FILE__)}/chronos/locale/strings/*.yaml") { |file|
 		lang = File.basename(file, YAMLExt)
-		load_strings(file, lang)
+		begin
+			load_strings(file, lang)
+		rescue => e
+			warn "Had errors while loading strings file #{file}: #{e}"
+		end
 	}
+
+	self.language = ENV['LANG'] || 'en_US'
+	self.timezone = Time.now.strftime("%Z")
+	@calendar     = nil
 end

@@ -1,6 +1,6 @@
 begin
 	require 'rubygems'
-	gem 'bacon', '>= 1.0.0'
+	gem 'bacon', '>= 0.9.0'
 rescue LoadError
 	warn "Running without rubygems. Make sure bacon is at least 1.0.0"
 end

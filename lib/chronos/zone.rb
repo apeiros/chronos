@@ -23,6 +23,8 @@ module Chronos
 		:longitude_iso
 	)
 	class Zone
+		Inspect = "#<%s:%s>"
+
 		@by_name   = {}
 		@by_region = {}
 
@@ -37,6 +39,7 @@ module Chronos
 			:'UTC-7'     => -25200,
 			:'UTC-6'     => -21600,
 			:'UTC-5'     => -18000,
+			:'UTC-4:30'  => -16200,
 			:'UTC-4'     => -14400,
 			:'UTC-3:30'  => -12600,
 			:'UTC-3'     => -10800,
@@ -73,56 +76,89 @@ module Chronos
 		# map old/military timezone names to UTC
 		# corresponding utc, isDST[BOOL]
 		Map	= Hash.new { |hash, key| key }.merge!({
-			'YANKEE'   => [:'UTC-12',   false],
-			'XRAY'     => [:'UTC-11',   false],
-			'HST'      => [:'UTC-10',   false],
-			'WHISKY'   => [:'UTC-10',   false],
-			'AKST'     => [:'UTC-9',    false],
-			'AKDT'     => [:'UTC-9',    true],
-			'YDT'      => [:'UTC-9',    true],
-			'VICTOR'   => [:'UTC-9',    false],
-			'PST'      => [:'UTC-8',    false],
-			'PDT'      => [:'UTC-8',    true],
-			'UNIFORM'  => [:'UTC-8',    false],
-			'MST'      => [:'UTC-7',    false],
-			'MDT'      => [:'UTC-7',    true],
-			'TANGO'    => [:'UTC-7',    false],
-			'CST'      => [:'UTC-6',    false],
-			'CDT'      => [:'UTC-6',    true],
-			'SIERRA'   => [:'UTC-6',    false],
-			'EST'      => [:'UTC-5',    false],
-			'EDT'      => [:'UTC-5',    true],
-			'ROMEO'    => [:'UTC-5',    false],
-			'AST'      => [:'UTC-4',    false],
-			'ADT'      => [:'UTC-4',    true],
-			'QUEBEC'   => [:'UTC-4',    false],
-			'NST'      => [:'UTC-3:30', false],
-			'NDT'      => [:'UTC-3:30', true],
-			'PAPA'     => [:'UTC-3',    false],
-			'OSCAR'    => [:'UTC-2',    false],
-			'NOVEMBER' => [:'UTC-1',    false],
-			'GMT'      => [:'UTC',      false],
-			'WET'      => [:'UTC',      false],
-			'ZULU'     => [:'UTC',      false],
-			'CET'      => [:'UTC+1',    false],
-			'CEST'     => [:'UTC+1',    true],
-			'ALPHA'    => [:'UTC+1',    false],
-			'BRAVO'    => [:'UTC+2',    false],
-			'MSK'      => [:'UTC+3',    false],
-			'CHARLIE'  => [:'UTC+3',    false],
-			'DELTA'    => [:'UTC+4',    false],
-			'ECHO'     => [:'UTC+5',    false],
-			'IST'      => [:'UTC+5:30', false],
-			'FOXTROT'  => [:'UTC+6',    false],
-			'GOLF'     => [:'UTC+7',    false],
-			'AWST'     => [:'UTC+8',    false],
-			'HOTEL'    => [:'UTC+8',    false],
-			'INDIA'    => [:'UTC+9',    false],
-			'ACST'     => [:'UTC+9:30', false],
-			'AEST'     => [:'UTC+10',   false],
-			'KILO'     => [:'UTC+10',   false],
-			'LIMA'     => [:'UTC+11',   false],
-			'MIKE'     => [:'UTC+12',   false]
+			# for ::DateTime
+			'-12:00'   => ['utc-12',   false],
+			'-11:00'   => ['utc-11',   false],
+			'-10:00'   => ['utc-10',   false],
+			'-09:00'   => ['utc-9',    false],
+			'-08:00'   => ['utc-8',    false],
+			'-07:00'   => ['utc-7',    false],
+			'-06:00'   => ['utc-6',    false],
+			'-05:00'   => ['utc-5',    false],
+			'-04:30'   => ['utc-4:30', false],
+			'-04:00'   => ['utc-4',    false],
+			'-03:00'   => ['utc-3',    false],
+			'-03:30'   => ['utc-3:30', false],
+			'-02:00'   => ['utc-2',    false],
+			'-01:00'   => ['utc-1',    false],
+			'+00:00'   => ['utc',      false],
+			'+01:00'   => ['utc+1',    false],
+			'+02:00'   => ['utc+2',    false],
+			'+03:00'   => ['utc+3',    false],
+			'+03:30'   => ['utc+3:30', false],
+			'+04:00'   => ['utc+4',    false],
+			'+05:00'   => ['utc+5',    false],
+			'+05:30'   => ['utc+5:30', false],
+			'+06:00'   => ['utc+6',    false],
+			'+07:00'   => ['utc+7',    false],
+			'+08:00'   => ['utc+8',    false],
+			'+09:00'   => ['utc+9',    false],
+			'+09:30'   => ['utc+9:30', false],
+			'+10:00'   => ['utc+10',   false],
+			'+11:00'   => ['utc+11',   false],
+			'+12:00'   => ['utc+12',   false],
+			# military & old
+			'yankee'   => ['utc-12',   false],
+			'xray'     => ['utc-11',   false],
+			'hst'      => ['utc-10',   false],
+			'whisky'   => ['utc-10',   false],
+			'akst'     => ['utc-9',    false],
+			'akdt'     => ['utc-9',    true],
+			'ydt'      => ['utc-9',    true],
+			'victor'   => ['utc-9',    false],
+			'pst'      => ['utc-8',    false],
+			'pdt'      => ['utc-8',    true],
+			'uniform'  => ['utc-8',    false],
+			'mst'      => ['utc-7',    false],
+			'mdt'      => ['utc-7',    true],
+			'tango'    => ['utc-7',    false],
+			'cst'      => ['utc-6',    false],
+			'cdt'      => ['utc-6',    true],
+			'sierra'   => ['utc-6',    false],
+			'est'      => ['utc-5',    false],
+			'edt'      => ['utc-5',    true],
+			'romeo'    => ['utc-5',    false],
+			'vst'      => ['utc-4:30', false],
+			'ast'      => ['utc-4',    false],
+			'adt'      => ['utc-4',    true],
+			'quebec'   => ['utc-4',    false],
+			'nst'      => ['utc-3:30', false],
+			'ndt'      => ['utc-3:30', true],
+			'papa'     => ['utc-3',    false],
+			'oscar'    => ['utc-2',    false],
+			'november' => ['utc-1',    false],
+			'gmt'      => ['utc',      false],
+			'wet'      => ['utc',      false],
+			'zulu'     => ['utc',      false],
+			'cet'      => ['utc+1',    false],
+			'cest'     => ['utc+1',    true],
+			'alpha'    => ['utc+1',    false],
+			'bravo'    => ['utc+2',    false],
+			'msk'      => ['utc+3',    false],
+			'charlie'  => ['utc+3',    false],
+			'delta'    => ['utc+4',    false],
+			'echo'     => ['utc+5',    false],
+			'ist'      => ['utc+5:30', false],
+			'foxtrot'  => ['utc+6',    false],
+			'golf'     => ['utc+7',    false],
+			'awst'     => ['utc+8',    false],
+			'hotel'    => ['utc+8',    false],
+			'india'    => ['utc+9',    false],
+			'acst'     => ['utc+9:30', false],
+			'aest'     => ['utc+10',   false],
+			'kilo'     => ['utc+10',   false],
+			'lima'     => ['utc+11',   false],
+			'mike'     => ['utc+12',   false]
 		})
 		
 		# load locations from a tabfile
@@ -154,8 +190,21 @@ module Chronos
 			end
 		end
 		
-		def self.[](by_name)
-			@by_name[by_name.downcase]
+		def self.[](name)
+			name = name.to_s.downcase
+			if zone = @by_name[name] then
+				zone
+			elsif mapped = Map[name]
+				@by_name[mapped.first]
+			end
+		end
+		
+		def zone_names
+			@by_name.keys
+		end
+		
+		def inspect
+			sprintf Inspect, self.class, timezone_id
 		end
 	end
 end

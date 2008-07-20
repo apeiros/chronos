@@ -47,20 +47,6 @@ module Chronos
 				(year.leap_year? ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1).at(month)
 			end
 	
-			# create a datetime with date and time part set to the current system time
-			# and date
-			def self.now(timezone=nil, language=nil)
-				Time.now.to_datetime(timezone, language)
-			end
-	
-			# create a datetime with only the date part set to the current system date
-			# for timezone/language append a .in(timezone, language) or set a global
-			# (see Chronos::Datetime)
-			def self.today
-				now = Time.now
-				ordinal(now.year, now.yday)
-			end
-	
 			# create a datetime with date part only from year, month and day_of_month
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
@@ -106,13 +92,6 @@ module Chronos
 			def self.time(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
 				new(nil,hour*3600+minute*60+second+fraction, timezone=nil, language=nil)
 			end
-	
-			# create a datetime with date and time part from a unix-epoch-stamp
-			# for timezone/language append a .in(timezone, language) or set a global
-			# (see Chronos::Datetime)
-			def self.epoch(unix_epoch_time, timezone=nil, language=nil)
-				Time.at(unix_epoch_time).to_datetime(timezone, language)
-			end
 			
 			# parses an ISO 8601 string
 			# this can be either date, time or date and time
@@ -134,61 +113,22 @@ module Chronos
 				raise NoMethodError
 			end
 	
-			# the absolute day_number - the internal representation of the date
-			attr_reader :day_number
-			# the absolute second_number - the internal representation of the time
-			# together with fraction
-			attr_reader :second_number
-	
-			# the amount of days the dates representation is shifted (caused by a time-
-			# part with an offset that 'overflows' into the previous or next day)
-			attr_reader :overflow
-			# the amount of seconds the times representation is shifted
-			attr_reader :offset
-	
-			# the Zone instance used to retrieve offset
-			attr_reader :timezone
-			# the language used to output names (weekday-names, month-names)
-			attr_reader :language
-			def initialize(day, second, timezone=nil, language=nil)
-				@day_number    = day ? day.round : nil
-				@second_number = second ? second.round : nil
-				@timezone      = (timezone || Thread.current[:timezone] || $timezone || ENV['timezone'] || nil).freeze
-				@language      = (language || Thread.current[:language] || $language || ENV['language'] || "en-us").freeze
-				@offset        = @timezone && @timezone.offset ? @timezone.offset : 0
-				if @second_number then
-					@overflow = (@second_number+@offset).div(86400)
-				else
-					@overflow = 0 # overflow is created by time + timezone offset
-				end
-			end
-	
 			# add a/modify the time component to/of a date only datetime
 			def at(hour, minute=0, second=0, fraction=0.0)
-				Datetime.new(
-					@day_number,
-					hour*3600+minute*60+second+fraction,
+				overflow, second = *(hour*3600+minute*60+second+fraction-@timezone.offset).divmod(86400)
+				self.class.new(
+					@day_number+overflow,
+					second*1_000_000_000_000,
 					@timezone,
 					@language
 				)
 			end
-	
-			# converts the datetime object to given timezone/language
-			def in(timezone=nil, language=nil)
-				timezone = Zone[timezone] unless timezone.kind_of?(Zone) or timezone.nil?
-				if timezone then
-					overflow, second_number = (@second_number-timezone.offset).divmod(86400)
-				else
-					overflow, second_number = 0, @second_number
-				end
-				Datetime.new(@day_number+overflow, second_number, timezone, language)
-			end
-			
+
 			# change to another timezone, also gives the opportunity to change language
 			def change_zone(timezone=nil, language=nil)
 				timezone ||= @timezone
 				timezone = Zone[timezone] unless timezone.kind_of?(Zone)
-				Datetime.new(@day_number, @second_number, timezone, language)
+				Datetime.new(@day_number, @ps_number, timezone, language)
 			end
 	
 			# this method calculates @day_of_year and @year from @day_number - only used internally
@@ -331,9 +271,9 @@ module Chronos
 			# the hour of the day (0..23, if it has a time part)
 			def hour
 				begin
-					@hour ||= (@second_number+@offset).div(3600)
+					@hour ||= (@ps_number.div(1_000_000_000_000)+@offset).div(3600)
 				rescue => e
-					raise NoTimePart unless @second_number
+					raise NoTimePart unless @ps_number
 					raise
 				end
 			end
@@ -341,9 +281,9 @@ module Chronos
 			# the minute of the hour (0..59, if it has a time part)
 			def minute
 				begin
-					@minute ||= (@second_number+@offset).div(60)%60
+					@minute ||= (@ps_number.div(1_000_000_000_000)+@offset).div(60)%60
 				rescue => e
-					raise NoTimePart unless @second_number
+					raise NoTimePart unless @ps_number
 					raise
 				end
 			end
@@ -351,9 +291,9 @@ module Chronos
 			# the minute of the minute (0..59, if it has a time part)
 			def second
 				begin
-					@second ||= (@second_number+@offset)%60
+					@second ||= (@ps_number.div(1_000_000_000_000)+@offset)%60
 				rescue => e
-					raise NoTimePart unless @second_number
+					raise NoTimePart unless @ps_number
 					raise
 				end
 			end
@@ -362,9 +302,9 @@ module Chronos
 			# together with second_number
 			def fraction
 				begin
-					@second_number%1
+					@ps_number.divmod(1_000_000_000_000).last.quo(1_000_000_000_000)
 				rescue => e
-					raise NoTimePart unless @second_number
+					raise NoTimePart unless @ps_number
 					raise
 				end
 			end
@@ -372,21 +312,11 @@ module Chronos
 			# the microseconds (0..999999, if it has a time part)
 			def usec
 				begin
-					(@second_number%1*1000000).round
+					@ps_number.div(1_000_000).divmod(1_000_000).last
 				rescue => e
-					raise NoTimePart unless @second_number
+					raise NoTimePart unless @ps_number
 					raise
 				end
-			end
-	
-			# returns a date-only datetime from this
-			def strip_time
-				Datetime.new(@day_number+@overflow, nil, @timezone, @language)
-			end
-	
-			# returns a time-only datetime from this
-			def strip_date
-				Datetime.new(nil, @second_number, @timezone, @language)
 			end
 	
 			# will raise if you try to do e.g.: Datetime.civil(2000,3,31).next(:month)
@@ -510,97 +440,6 @@ module Chronos
 			def previous(unit, step=1, lower_limit=nil, &block)
 				succeeding(unit, -step, lower_limit, &block)
 			end
-			
-			def +(duration)
-				duration  = duration.to_duration
-				tmp           = self.class.new(@day_number, @second_number)
-				years, months = (tmp.month+duration.months-1).divmod(12)
-				days, sec     = (@second_number+duration.seconds).divmod(86400)
-				tmp           = self.class.civil(tmp.year+years,tmp.months+1,tmp.day)
-				day_number    = temporary.day_number+days
-				self.class.new(day_number, sec, @timezone, @language)
-			end
-	
-			def -(other)
-				if other.respond_to?(:to_duration) then
-					duration      = other.to_duration
-					tmp           = self.class.new(@day_number, @second_number)
-					years, months = (tmp.month-duration.months-1).divmod(12)
-					days, sec     = (@second_number-duration.seconds).divmod(86400)
-					tmp           = self.class.civil(tmp.year+years,tmp.months+1,tmp.day)
-					day_number    = temporary.day_number+days
-					self.class.new(day_number, sec, @timezone, @language)
-				elsif other.kind_of?(Datetime) then
-					Interval.between(self, other)
-				else
-					raise TypeError, "Can't coerce #{other} to Duration or Datetime."
-				end
-			end
-	
-			# see <=>
-			def ==(other)
-				(self.<=>(other)) == 0
-			end
-	
-			# compare two datetimes.
-			# not allowed if only one of both doesn't have no date.
-			# if only one of both doesn't have time, 0h 0m 0.0s is used as time.
-			def <=>(other)
-				if @day_number.nil?
-					if other.day_number.nil?
-						dn1, dn2 = 0,0
-					else
-						return nil #raise ArgumentError, "Comparing time only datetime to datetime"
-					end
-				elsif other.day_number.nil?
-					return nil #raise ArgumentError, "Comparing time only datetime to datetime"
-				else
-					dn1, dn2 = @day_number, other.day_number
-				end
-	
-				[dn1,@second_number||0] <=> [dn2, other.second_number||0]
-			end
-	
-			# true if this instance has date and time part
-			def datetime?
-				@day_number && @second_number
-			end
-	
-			# true if this instance has a date part
-			def date?
-				!@day_number.nil?
-			end
-			
-			def time_only?
-				@day_number.nil?
-			end
-	
-			# true if this instance has a time part
-			def time?
-				!@second_number.nil?
-			end
-	
-			def date_only?
-				@second_number.nil?
-			end
-	
-			# convert to ::Time (core Time class)
-			# be aware that due to a lack of possibility to provide the
-			# timezone, all results are returned
-			# - in utc if this Datetime instance has a timezone set
-			# - in the local timezone if this instance has no timezone set
-			# will raise if the Datetime object is time_only?
-			def to_time
-				raise TypeError, "Can't convert a time_only? Datetime to Time" if time_only?
-				ref   = @timezone ? self.class.new(@day_number, @second_number) : self
-				items = [ref.year, ref.month, ref.day_of_month]
-				items.push ref.hour, ref.minute, ref.second, ref.usec*1000000 if @second_number
-				if @timezone then
-					Time.utc(*items)
-				else
-					Time.local(*items)
-				end
-			end
 	
 			# format(string, language, timezone)
 			# format datetime, similar to strftime. Format strings can contain:
@@ -629,12 +468,12 @@ module Chronos
 			#   %%: Literal % character
 			def format(string=nil, language=nil)
 				unless string
-					if !@day_number then
-						string = "%02H:%02M:%02S"
-					elsif !@second_number then
-						string = "%04y-%02m-%02d"
+					string = if @day_number.nil? then
+						ISO_8601_Time
+					elsif @ps_number.nil? then
+						ISO_8601_Date
 					else
-						string = "%04y-%02m-%02d %02H:%02M:%02S"
+						ISO_8601_Datetime
 					end
 				end
 
@@ -707,8 +546,8 @@ module Chronos
 			# time:     14:31:25-04:00
 			def to_s
 				if @day_number then
-					if @second_number then
-						sprintf ISO8601_Datetime, year, month, day, hour, minute, second, *(offset/60).floor.divmod(60)
+					if @ps_number then
+						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, *(offset/60).floor.divmod(60)
 					else
 						sprintf ISO_8601_Date, year, month, day
 					end
@@ -722,7 +561,7 @@ module Chronos
 					self.class,
 					self,
 					@day_number,
-					@second_number
+					@ps_number
 				# / sprintf
 			end
 		end # Datetime::Gregorian

@@ -7,7 +7,8 @@
 * Validate Datetime API
 * Refactor Duration and Interval (Gregorian)
 * Lazy loading of strings/parsers/formatters
-* 
+* chronos/time_dropin - Allow Chronos::Datetime::Gregorian to act as a Time drop-in
+* chronos/date_dropin - Allow Chronos::Datetime::Gregorian to act as a Date drop-in
 
 = UNHAPPY
 * DateTime#strftime("%Z") does not indicate if it's in a timezone with active DST or not,
@@ -16,3 +17,11 @@
   in the common use case where you just use Gregorian.
   Examples: Chronos::Datetime(class methods)
 * date adds Time#to_datetime which collides with Chronos' ducktyping.
+
+== WHAT I WANT
+All changes to the source MUST NOT violate any of the following statements:
+
+* Multiple calendar systems can be used at the same time
+* If a single calendar system is used, (almost) all of the complexity of supporting multiple calendars
+  is hidden
+* Chronos is multilingual

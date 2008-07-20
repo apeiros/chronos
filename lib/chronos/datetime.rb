@@ -45,7 +45,8 @@ module Chronos
 		
 		# Delegate all methods to the current calendary 
 		def self.method_missing(*args, &block)
-			if klass = const_get(Chronos.calendar) then
+			calendar = Chronos.calendar
+			if calendar && klass = const_get(calendar) then
 				klass.__send__(*args, &block)
 			else
 				super
@@ -82,7 +83,7 @@ module Chronos
 					over, seconds  = (seconds-(obj.offset*86400).to_i).divmod(86400)
 					ps_number       = seconds*1_000_000_000_000
 					daynumber     += over
-					new(daynumber, ps_number, timezone || time.strftime("%Z"), language)
+					new(daynumber, ps_number, timezone || obj.strftime("%Z"), language)
 
 				# uses Chronos::Datetime::Gregorian::ordinal's code
 				when ::Date # *must* be after ::DateTime as ::DateTime is a child of ::Date and would trigger on this too
@@ -105,7 +106,7 @@ module Chronos
 		# (see Chronos::Datetime)
 		def self.today(timezone=nil, language=nil)
 			# uses Chronos::Datetime::Gregorian::ordinal's code
-			time        = obj.utc
+			time        = Time.now.utc
 			year        = time.year
 			day_of_year = time.yday
 			leaps       = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
@@ -279,7 +280,7 @@ module Chronos
 		end
 		
 		def inspect
-			sprintf Inspect, "#<#{self.class} #{date} #{time} (#{@day_number.inspect}, #{@ps_number.inspect})>"
+			sprintf Inspect, self.class, @day_number, @ps_number, @timezone, @language
 		end
 		
 		# :nodoc:
