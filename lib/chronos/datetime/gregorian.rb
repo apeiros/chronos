@@ -43,8 +43,8 @@ module Chronos
 			}.freeze
 	
 			# convert hours, minutes, seconds and fraction to picoseconds required by ::new
-			def self.picoseconds(hour, minute, second, fraction=nil)
-				(hour*3600+minute*60+second+(fraction||0))*1_000_000_000_000
+			def self.picoseconds(hour, minute, second, fraction=nil, offset=nil)
+				(hour*3600+minute*60+second+(fraction||0)-(offset||0))*1_000_000_000_000
 			end
 
 			# returns the number of days in a given month for a given year
@@ -104,21 +104,21 @@ module Chronos
 							year   = $1.to_i
 							month  = $2.to_i
 							day    = $3.to_i
-							ps     = picoseconds($4.to_i, $5.to_i, $6.include?('.') ? $6.to_f : $6.to_i)
-							zone   = $7
+							zone   = Chronos.timezone($7)
+							ps     = picoseconds($4.to_i, $5.to_i, $6.include?('.') ? $6.to_f : $6.to_i, nil, zone.offset)
 							components(year, month, nil, nil, day, nil, ps, zone, language)
 						when /\A(-?\d\d|-?\d{4})(?:-?W(\d\d)(?:-?(\d))?)?T(\d\d)(?::?(\d\d)(?::?(\d\d(?:\.\d+)?)?)?)?(Z|[-+]\d\d:\d\d)?\z/
 							year   = $1.to_i
 							week   = $2.to_i
 							day    = $3.to_i
-							ps     = picoseconds($4.to_i, $5.to_i, $6.include?('.') ? $6.to_f : $6.to_i)
-							zone   = $7
+							zone   = Chronos.timezone($7)
+							ps     = picoseconds($4.to_i, $5.to_i, $6.include?('.') ? $6.to_f : $6.to_i, nil, zone.offset)
 							components(year, nil, week, nil, nil, day, ps, zone, language)
 						when /\A(-?\d\d|-?\d{4})(?:-?(\d{3}))?T(\d\d)(?::?(\d\d)(?::?(\d\d(?:\.\d+)?)?)?)?(Z|[-+]\d\d:\d\d)?\z/
 							year   = $1.to_i
 							day    = $2.to_i
-							ps     = picoseconds($3.to_i, $4.to_i, $5.include?('.') ? $5.to_f : $5.to_i)
 							zone   = Chronos.timezone($6)
+							ps     = picoseconds($3.to_i, $4.to_i, $5.include?('.') ? $5.to_f : $5.to_i, nil, zone.offset)
 							components(year, nil, nil, day, nil, nil, ps, zone, language)
 					end
 				# date | time
