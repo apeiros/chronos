@@ -11,7 +11,7 @@ namespace :spec do
 	task :run do
 		dependency(%w'bacon flexmock', 'Requires %s to run')
 
-		Bacon.extend Bacon.const_get('TestUnitOutput') rescue abort "No such formatter: #{output}"
+		Bacon.extend Bacon.const_get('TestUnitOutput') rescue abort "No such formatter: 'TestUnitOutput'"
 		Bacon.summary_on_exit
 		
 		Dir.glob("spec/**/*_spec.rb") { |file|
