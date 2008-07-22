@@ -17,6 +17,7 @@
   in the common use case where you just use Gregorian.
   Examples: Chronos::Datetime(class methods)
 * date adds Time#to_datetime which collides with Chronos' ducktyping.
+* Freeze datetime/duration/interval
 
 == WHAT I WANT
 All changes to the source MUST NOT violate any of the following statements:

@@ -18,6 +18,55 @@ describe 'Chronos::Datetime::Gregorian.iso_8601' do
 	end
 end
 
+describe 'Chronos::Datetime::Gregorian should be consistent over a full cycle (400 years)' do
+	it '???' do
+		days				 = [nil, 31,28,31,30,31,30,31,31,30,31,30,31]
+		init         = Chronos::Datetime::Gregorian.civil(1999,1,1)
+		day_of_month = nil
+		day_of_week  = init.day_of_week
+		day_number	 = init.day_number
+		1999.upto(2401) { |year| # test a bit more than 1 full cycle, luckily weekdays have a full cycle over 400 years too
+			puts "year: #{year}" if year%100 == 0
+			day_of_year = 1
+			1.upto(12) { |month|
+				ldim = days[month] + ((month == 2 && Chronos::Datetime::Gregorian.leap_year?(year)) ? 1 : 0)
+				1.upto(ldim) { |day_of_month|
+					date1 = Chronos::Datetime::Gregorian.civil(year, month, day_of_month)
+					date2 = Chronos::Datetime::Gregorian.ordinal(year, day_of_year)
+					date3 = Chronos::Datetime::Gregorian.commercial(date1.commercial_year, date1.week, day_of_week)
+					date4 = Date.civil(year, month, day_of_month)
+					
+					# test if consistent with Time
+					date4.year.should.be.equal(date1.year)
+					date4.cwyear.should.be.equal(date1.commercial_year)
+					date4.month.should.be.equal(date1.month)
+					date4.strftime("%V").to_i.should.be.equal(date1.week)
+					date4.yday.should.be.equal(date1.day_of_year)
+					date4.day.should.be.equal(date1.day_of_month)
+					((date4.wday+6)%7).should.be.equal(date1.day_of_week)
+					
+					# test if different constructors yield the same
+					date1.should.be.equal(date2)
+					date1.should.be.equal(date3)
+					
+					# test incremental integrity
+					day_number.should.be.equal(date1.day_number)
+					year.should.be.equal(date1.year)
+					day_of_year.should.be.equal(date1.day_of_year)
+					month.should.be.equal(date1.month)
+					day_of_month.should.be.equal(date1.day_of_month)
+					day_of_week.should.be.equal(date1.day_of_week)
+
+					day_number	+= 1
+					day_of_year += 1
+					day_of_week	 = (day_of_week+1)%7
+				}
+				#assert_raise(ArgumentError) { Chronos::Datetime::Gregorian.civil(year, month, day_of_month+1) }
+			}
+		}
+	end
+end
+
 __END__
 class TestDatetime < Test::Unit::TestCase
 	Dt = Chronos::Datetime

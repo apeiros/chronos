@@ -12,6 +12,7 @@ class DateTime < Date; end
 
 
 
+require 'chronos/calendar'
 require 'chronos/datetime'
 require 'chronos/duration'
 require 'chronos/exceptions'

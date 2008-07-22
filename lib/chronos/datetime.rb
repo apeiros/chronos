@@ -236,7 +236,7 @@ module Chronos
 		# if only one of both doesn't have time, 0h 0m 0.0s is used as time.
 		def <=>(other)
 			return nil if @day_number.nil? ^ other.day_number.nil? # either both or none must be nil
-			[@day_number||0,@ps_number||0] <=> [other.day_number||0, other.second_number||0]
+			[@day_number||0,@ps_number||0] <=> [other.day_number||0, other.ps_number||0]
 		end
 
 		# true if this instance has date and time part
