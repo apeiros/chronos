@@ -61,7 +61,7 @@ To install, do:
 
 	curl -L -o chronos.tgz http://github.com/apeiros/chronos/tarball/master
 	tar -xfz chronos.tgz
-	cd apeiros-chronos-+big number here+/
+	cd apeiros-chronos-<big number here>/
 	rake gem:install
 
 Note: you might have to use 'sudo rake gem:install'
