@@ -62,8 +62,10 @@
     b < c # => true
 
 == The problem with +/- and datetimes/durations
-* Adding and subtracting durations to and from datetimes depends on the operands. This means:
-    (datetime + duration) - duration == datetime # is NOT guaranteed to be true
+* Adding and subtracting durations to and from datetimes depends on the operands.
+  This means that adding a duration to a datetime and subtracting the same duration from the
+  result can result in a new datetime that is not equal to the original datetime:
+    (a_datetime + a_duration) - a_duration == a_datetime # is NOT guaranteed to be true
   An example where this happens:
     a = Datetime.civil(2007,1,31) # => 2007-01-31
     b = a + 1.month               # => 2007-02-28
