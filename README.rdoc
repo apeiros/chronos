@@ -1,6 +1,6 @@
 = Chronos
 
-== Indexing
+== INDEXING
 Name::             Chronos
 Gem::              chronos
 Summary::          Library to deal with Date, Time, Durations and Intervals.
@@ -12,12 +12,17 @@ Bugtracker::
 Feature Requests:: 
 License::          Ruby License (see LICENSE.txt)
 
-== Description
+== DESCRIPTION
 Chronos is a library that lets you easily deal with various kinds of calcutations
 with dates, times, durations and intervals.
 
+== IMPORTANT
+Date, Time and Duration don't satisfy usual algebraic laws. Many operations are a
+matter of definition. It is very likely that your expectation might be broken at
+some points. Read the NOTES.rdoc for ambiguous cases and how they are solved in
+Chronos.
 
-== Installing
+== INSTALLING
 === Via RubyGems
 You need for the installation:
 * rubygems >= 1.2.0
