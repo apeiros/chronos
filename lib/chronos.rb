@@ -41,9 +41,37 @@ require 'yaml'
 #   Chronos::Datetime.import(Time.now) # => Chronos::Datetime
 #
 module Chronos
+	# picoseconds in a nanosecond
+	PS_IN_NANOSECOND  = 1_000
+
+	# picoseconds in a microsecond
+	PS_IN_MICROSECOND = PS_IN_NANOSECOND * 1_000
+
+	# picoseconds in a microsecond
+	PS_IN_MILLISECOND = PS_IN_MICROSECOND * 1_000
+
+	# picoseconds in a second
+	PS_IN_SECOND      = PS_IN_MILLISECOND * 1_000
+	
+	# picoseconds in a minute
+	PS_IN_MINUTE      = PS_IN_SECOND * 60
+
+	# picoseconds in an hour
+	PS_IN_HOUR        = PS_IN_MINUTE * 60
+
+	# picoseconds in a day
+	PS_IN_DAY         = PS_IN_HOUR * 24
+
+	# The extension YAML files use
 	YAMLExt           = '.yaml'.freeze
+	
+	# The full path of the zones.tab file
 	ZonesFile         = File.join(File.dirname(__FILE__), "chronos", "data", "zones.tab").freeze
+	
+	# The full path of the marshalled zones data cache file
 	ZonesData         = File.join(File.dirname(__FILE__), "chronos", "data", "zones.marshal").freeze
+	
+	
 	DefaultizeStrings = [
 		:picosecond,
 		:nanosecond,
