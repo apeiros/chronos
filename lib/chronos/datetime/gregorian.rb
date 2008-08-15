@@ -438,7 +438,7 @@ module Chronos
 							overflow, month = *(month()-1+step.floor).divmod(12)
 							year   = (year()+overflow).to_f
 							leap   = year.leap_year?
-							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month+1]
+							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 							leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 							doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month]+day_of_month
 							Datetime.new(year*365+leaps+doy, @ps_number, @timezone, @language)
@@ -490,7 +490,7 @@ module Chronos
 						month  = at.floor
 						year   = year().to_f
 						leap   = year.leap_year?
-						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month+1]
+						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 						leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 						doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month]+day_of_month
 						Datetime.new(year*365+leaps+doy, @ps_number, @timezone, @language)
