@@ -67,12 +67,28 @@ To install, do:
 Note: you might have to use 'sudo rake gem:install'
 
 
-== Examples
+== EXAMPLES
 See in the examples dir for code examples.
 
 
-== Design
+== DESIGN
+=== General
+In general for all structures there are calendary-agnostic classes. Those are directly
+defined within the Chronos module. The calendary specific subclasses are then defined
+as ::Chronos::<Classname>::<Calendarname>. There are shortcuts defined via specific requires.
+E.g. if you require 'chronos/<calendarname>' it will map all
+::Chronos::<Classname>::<Calendarname> to  ::<Classname> for convenience.
 
+=== Datetime
+A datetime is a point on the axis of time. This axis has an origin (zero point). For chronos this
+origin is defined to be backdated gregorian datetime 0000-01-01T00:00:00Z. The units to measure
+the distance from this origin is days+picoseconds, where 8.64e16 picoseconds is 1 day.
+The calendar specific classes then can represent that date/time in the units defined for that
+calendar, such as gregorian can represent that distance from origin as
+year-month-day"T"hour:minute:second.fraction±timezone-offset.
+Timezone and DST are only representational offsets on top of that distance. That means that
+2008-01-01T12:00Z and 2008-01-01T14:00+02:00 have the same distance, but are represented
+differently due to the different offset. Just as "May" (english) and "Mai" (german) are
+different representations of the same month.
 
-
-== Links
+== LINKS
