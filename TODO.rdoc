@@ -2,27 +2,42 @@
 
 
 = TODO
+== Pre-Release
 * Switch @second_number to @ps_number
 * Change testcases to bacon specs
 * Validate Datetime API
 * Refactor Duration and Interval (Gregorian)
+
+== Low priority
+* Write extensive parsing suite, there should be 4 kinds of parsers:
+  * Extremely strict format specific parsers, such as Chronos::Datetime::Gregorian::iso8601 which
+    parses only and only iso8601 compliant strings and raises if it fails.
+  * User defined strict parsers which use a Parser::Format (or a string which the parser method
+    converts to a Parser::Format instance) to determine the parsing rules which raise if they fail
+    to match.
+  * Strict automatic parser +Classname+::parse, which tries predetermined formats and
+    raises if it fails to consume the whole string.
+  * Lax automatic parser (no name yet, maybe just a switch to ::parse) which do "as good as
+    possible" matching and conversion and defaultize whatever is missing and never raise.
+* Write extensive #format suite with proper localization
+  * Localize words ('month', 'months', ...)
+  * Localize numerics ('one', 'two', ...)
+  * Localize entities ('January', ..., 'Monday', ...)
+  * Localize format (mm/dd/YYYY, dd.mm.YYYY, ...)
 * Lazy loading of strings/parsers/formatters
 * chronos/time_dropin - Allow Chronos::Datetime::Gregorian to act as a Time drop-in
 * chronos/date_dropin - Allow Chronos::Datetime::Gregorian to act as a Date drop-in
+* Import Scheduler
 
 = UNHAPPY
 * DateTime#strftime("%Z") does not indicate if it's in a timezone with active DST or not,
   so importing a DateTime and importing a Time will give different results.
-* Added complexity supporting different calendar systems brings. I'd like to make that complexity invisible
-  in the common use case where you just use Gregorian.
-  Examples: Chronos::Datetime(class methods)
-* date adds Time#to_datetime which collides with Chronos' ducktyping.
 * Freeze datetime/duration/interval
 
 == WHAT I WANT
 All changes to the source MUST NOT violate any of the following statements:
 
 * Multiple calendar systems can be used at the same time
-* If a single calendar system is used, (almost) all of the complexity of supporting multiple calendars
-  is hidden
+* If a single calendar system is used, (almost) all of the complexity of supporting multiple
+  calendars is hidden
 * Chronos is multilingual
