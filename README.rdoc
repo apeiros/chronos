@@ -8,8 +8,8 @@ Author::           Stefan Rusterholz <stefan.rusterholz+chronos at gmail.com>
 Version::          0.1.0
 Website::          http://chronos.rubyforge.org/
 Git Repository::   http://github.com/apeiros/chronos
-Bugtracker::       
-Feature Requests:: 
+Bugtracker::       -
+Feature Requests:: -
 License::          Ruby License (see LICENSE.txt)
 
 == DESCRIPTION
@@ -61,7 +61,7 @@ To install, do:
 
 	curl -L -o chronos.tgz http://github.com/apeiros/chronos/tarball/master
 	tar -xfz chronos.tgz
-	cd apeiros-chronos-<big number here>/
+	cd apeiros-chronos-+big number here+/
 	rake gem:install
 
 Note: you might have to use 'sudo rake gem:install'
@@ -75,9 +75,9 @@ See in the examples dir for code examples.
 === General
 In general for all structures there are calendary-agnostic classes. Those are directly
 defined within the Chronos module. The calendary specific subclasses are then defined
-as ::Chronos::<Classname>::<Calendarname>. There are shortcuts defined via specific requires.
-E.g. if you require 'chronos/<calendarname>' it will map all
-::Chronos::<Classname>::<Calendarname> to  ::<Classname> for convenience.
+as ::Chronos::+Classname+::+Calendarname+. There are shortcuts defined via specific requires.
+E.g. if you require 'chronos/+calendarname+' it will map all
+::Chronos::+Classname+::+Calendarname+ to  ::+Classname+ for convenience.
 
 === Datetime
 A datetime is a point on the axis of time. This axis has an origin (zero point). For chronos this
