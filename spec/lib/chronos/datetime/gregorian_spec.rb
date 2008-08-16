@@ -35,13 +35,13 @@ describe 'Chronos::Datetime::Gregorian' do
 				proc {
 					result = GDT.iso_8601('2001-12-31T09:41:29+02:00')
 				}.should.not.raise
-				result.year.should.be 2001
-				result.month.should.be 12
-				result.day_of_month.should.be 31
-				result.hour.should.be 9
-				result.minute.should.be 41
-				result.second.should.be 29
-				result.offset.in_seconds.should.be 7200
+				result.year.should.equal 2001
+				result.month.should.equal 12
+				result.day_of_month.should.equal 31
+				result.hour.should.equal 9
+				result.minute.should.equal 41
+				result.second.should.equal 29
+				result.offset.seconds.should.equal 7200
 			end
 		end
 	end # describe creating
