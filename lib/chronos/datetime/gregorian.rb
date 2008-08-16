@@ -172,7 +172,11 @@ module Chronos
 			# If at least one date component is set, a day_number will be generated.
 			# The default for year is the current year, the default for month, week, dayofyear, dayofmonth and
 			# dayofweek is 1.
-			def self.date_components(year, month, week, dayofyear, dayofmonth, dayofweek)
+			# day_of_month_mode has 3 possible values:
+			# * :restrict:: This mode will raise if day_of_month is invalid (default)
+			# * :reduce::   This mode will reduce the day_of_month to its maximum in case it it exceeds the maximum
+			# * :overflow:: This mode will increase the month + year until it becomes valid
+			def self.date_components(year, month, week, dayofyear, dayofmonth, dayofweek, day_of_month_mode=:restrict)
 				return nil unless (year || month || week || dayofyear || dayofmonth || dayofweek)
 				day_number = nil
 
@@ -185,7 +189,17 @@ module Chronos
 					# calculate how many days passed until this year
 					leap  = year.leap_year?
 					raise ArgumentError, "Invalid month (#{year}-#{month}-#{day_of_month})" if month < 1 or month > 12
-					raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{dayofmonth})" if dayofmonth > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
+					maxdayofmonth = (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
+					if dayofmonth > maxdayofmonth then
+						case day_of_month_mode
+							when :restrict
+								raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{dayofmonth})"
+							when :reduce
+								dayofmonth = maxdayofmonth
+							when :overflow
+								raise "Not yet implemented (day_of_month_mode = :overflow)"
+						end
+					end
 					doy   = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+dayofmonth
 					day_number = days_since(year)+doy
 
@@ -204,6 +218,29 @@ module Chronos
 					day_number   = days_since(year)+dayofyear
 				end
 				day_number
+			end
+
+
+			# You can add a Duration
+			def +(duration)
+				duration        = duration.class == Chronos::Duration::Gregorian ? duration : Chronos::Duration::Gregorian.import(duration)
+				year, month     = (year()*12+month()+duration.months).divmod(12)
+				over, ps_number = (@picoseconds+duration.picoseconds).divmod(Chronos::PS_IN_DAY)
+				day_number      = Chronos::Datetime::Gregorian.date_components(year, month, nil, nil, day_of_month(), nil, :reduce)+over
+				Chronos::Datetime::Gregorian.new(day_number, ps_number, @timezone, @language)
+			end
+
+			def -(duration_or_datetime)
+				klass = duration_or_datetime.class
+				if klass == Chronos::Duration::Gregorian then
+					self+(-duration_or_datetime)
+				elsif klass == Chronos::Datetime::Gregorian then
+					raise "not yet implemented"
+				elsif duration_or_datetime.respond_to?(:to_duration) then
+					self+(-Chronos::Duration::Gregorian.import(duration_or_datetime)
+				else
+					raise "not yet implemented"
+				end
 			end
 			
 			# add a/modify the time component to/of a date only datetime
