@@ -24,8 +24,10 @@
   * Localize entities ('January', ..., 'Monday', ...)
   * Localize format (mm/dd/YYYY, dd.mm.YYYY, ...)
 * Lazy loading of strings/parsers/formatters
-* chronos/time_dropin - Allow Chronos::Datetime::Gregorian to act as a Time drop-in
-* chronos/date_dropin - Allow Chronos::Datetime::Gregorian to act as a Date drop-in
+* chronos/replace/time - Allow Chronos::Datetime::Gregorian to act as a Time drop-in
+* chronos/replace/date - Allow Chronos::Datetime::Gregorian to act as a Date drop-in
+* chronos/compat/time - Allow Chronos::Duration::Gregorian to work seamlessly with Time
+* chronos/compat/date - Allow Chronos::Duration::Gregorian to work seamlessly with Date
 * Import Scheduler
 * Handle recurring
 * Natural language parsers
