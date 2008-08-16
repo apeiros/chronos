@@ -61,8 +61,10 @@ module Chronos
 			self.class.new(*self.to_a.map { |e| e.quo(other) })
 		end
 		
-		def in_picoseconds
-			@picoseconds
+		def %(other)
+			raise "Not yet implemented"
+			# Duration % Duration -> modulo per unit, e.g. duration % 1.hour -> ps % (1*PS_IN_HOUR)
+			# Duration % Symbol -> shortcut, e.g. duration % :hour -> duration % 1.hour
 		end
 		
 		def to_a
