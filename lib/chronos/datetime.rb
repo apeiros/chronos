@@ -140,8 +140,6 @@ module Chronos
 		# the amount of days the dates representation is shifted (caused by a time-
 		# part with an offset that 'overflows' into the previous or next day)
 		attr_reader :overflow
-		# the amount of seconds the times representation is shifted
-		attr_reader :offset
 
 		# the Zone instance used to retrieve offset
 		attr_reader :timezone
@@ -159,6 +157,12 @@ module Chronos
 				@overflow = (@ps_number.div(1_000_000_000_000)+@offset).div(86400)
 			else
 				@overflow = 0 # overflow is created by time + timezone offset + dst
+			end
+		end
+		
+		def offset
+			@offset_duration ||= begin
+				Duration::Gregorian.new(@offset*PS_IN_SECOND, 0, @language)
 			end
 		end
 
