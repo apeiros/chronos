@@ -76,6 +76,12 @@ module Chronos
 		def values_at(*keys)
 			to_hash.values_at(*keys)
 		end
+		
+		def durations_at(*keys)
+			keys.zip(values_at(*keys)).map { |key, value|
+				self.class.with(key => value, :language => @language)
+			}
+		end
 
 		# return a readable representation
 		def to_s
