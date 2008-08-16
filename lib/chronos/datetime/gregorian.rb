@@ -7,6 +7,8 @@
 
 
 require 'chronos'
+require 'chronos/calendar/gregorian'
+require 'chronos/duration/gregorian'
 
 
 
@@ -66,23 +68,37 @@ module Chronos
 			# create a datetime with date part only from year, month and day_of_month
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.civil(year, month, day_of_month)
-				new(date_components(year, month, nil, nil, day_of_month, nil), nil, nil, nil)
+			def self.civil(year, month, day_of_month, hour=nil, minute=nil, second=nil, timezone=nil, language=nil)
+				ps = nil
+				if hour || minute || second || timezone then
+					timezone = Chronos.timezone(timezone)
+					ps       = ps_components(hour, minute, second, nil, nil, timezone.offset)
+				end
+				new(date_components(year, month, nil, nil, day_of_month, nil), ps, timezone, language)
 			end
 	
 			# see Datetime#format
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.commercial(year, week, day_of_week, year_is_commercial=true)
-				raise ArgumentError, "Non commercial years are not yet supported" unless year_is_commercial
-				new(date_components(year, nil, week, nil, nil, day_of_week), nil, nil, nil)
+			def self.commercial(year, week, day_of_week, hour=nil, minute=nil, second=nil, timezone=nil, language=nil)
+				ps = nil
+				if hour || minute || second || timezone then
+					timezone = Chronos.timezone(timezone)
+					ps       = ps_components(hour, minute, second, nil, nil, timezone.offset)
+				end
+				new(date_components(year, nil, week, nil, nil, day_of_week), ps, timezone, language)
 			end
 	
 			# create a datetime with date part only from year and day_of_year
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.ordinal(year, day_of_year)
-				new(date_components(year, nil, nil, day_of_year, nil, nil), nil, nil, nil)
+			def self.ordinal(year, day_of_year, hour=nil, minute=nil, second=nil, timezone=nil, language=nil)
+				ps = nil
+				if hour || minute || second || timezone then
+					timezone = Chronos.timezone(timezone)
+					ps       = ps_components(hour, minute, second, nil, nil, timezone.offset)
+				end
+				new(date_components(year, nil, nil, day_of_year, nil, nil), ps, timezone, language)
 			end
 
 			# create a datetime with time part only from hour, minute, second,
@@ -90,7 +106,8 @@ module Chronos
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.at(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
-				new(nil,picoseconds(h,m,s,f), timezone=nil, language=nil)
+				timezone = Chronos.timezone(timezone)
+				new(nil, ps_components(hour, minute, second, fraction, nil, timezone.offset), timezone, language)
 			end
 			
 			# parses an ISO 8601 string
@@ -142,14 +159,24 @@ module Chronos
 	
 			# convert hours, minutes, seconds and fraction to picoseconds required by ::new
 			def self.ps_components(hour, minute, second, fraction=nil, ps=nil, offset=nil)
-				(hour*3600+minute*60+second+(fraction||0)-(offset||0))*1_000_000_000_000+(ps||0)
+				(
+					(hour||0)*3600+
+					(minute||0)*60+
+					(second||0)+
+					(fraction||0)-(offset||0)
+				)*PS_IN_SECOND+
+				(ps||0)
 			end
 			
 			# Get a day_number from various date components.
 			# If at least one date component is set, a day_number will be generated.
 			# The default for year is the current year, the default for month, week, dayofyear, dayofmonth and
 			# dayofweek is 1.
-			def self.date_components(year, month, week, dayofyear, dayofmonth, dayofweek)
+			# day_of_month_mode has 3 possible values:
+			# * :restrict:: This mode will raise if day_of_month is invalid (default)
+			# * :reduce::   This mode will reduce the day_of_month to its maximum in case it it exceeds the maximum
+			# * :overflow:: This mode will increase the month + year until it becomes valid
+			def self.date_components(year, month, week, dayofyear, dayofmonth, dayofweek, day_of_month_mode=:restrict)
 				return nil unless (year || month || week || dayofyear || dayofmonth || dayofweek)
 				day_number = nil
 
@@ -162,7 +189,17 @@ module Chronos
 					# calculate how many days passed until this year
 					leap  = year.leap_year?
 					raise ArgumentError, "Invalid month (#{year}-#{month}-#{day_of_month})" if month < 1 or month > 12
-					raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{dayofmonth})" if dayofmonth > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
+					maxdayofmonth = (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
+					if dayofmonth > maxdayofmonth then
+						case day_of_month_mode
+							when :restrict
+								raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{dayofmonth})"
+							when :reduce
+								dayofmonth = maxdayofmonth
+							when :overflow
+								raise "Not yet implemented (day_of_month_mode = :overflow)"
+						end
+					end
 					doy   = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+dayofmonth
 					day_number = days_since(year)+doy
 
@@ -181,6 +218,29 @@ module Chronos
 					day_number   = days_since(year)+dayofyear
 				end
 				day_number
+			end
+
+
+			# You can add a Duration
+			def +(duration)
+				duration        = duration.class == Chronos::Duration::Gregorian ? duration : Chronos::Duration::Gregorian.import(duration)
+				year, month     = (year()*12+(month()-1)+duration.months).divmod(12)
+				over, ps_number = (@ps_number+duration.picoseconds).divmod(Chronos::PS_IN_DAY)
+				day_number      = Chronos::Datetime::Gregorian.date_components(year, month+1, nil, nil, day_of_month(), nil, :reduce)+over
+				Chronos::Datetime::Gregorian.new(day_number, ps_number, @timezone, @language)
+			end
+
+			def -(duration_or_datetime)
+				klass = duration_or_datetime.class
+				if klass == Chronos::Duration::Gregorian then
+					self+(-duration_or_datetime)
+				elsif klass == Chronos::Datetime::Gregorian then
+					raise "not yet implemented"
+				elsif duration_or_datetime.respond_to?(:to_duration) then
+					self+(-Chronos::Duration::Gregorian.import(duration_or_datetime))
+				else
+					raise "not yet implemented"
+				end
 			end
 			
 			# add a/modify the time component to/of a date only datetime
@@ -284,7 +344,7 @@ module Chronos
 			def day_name(language=nil)
 				language ||= @language
 				begin
-					DAY_NAME[(@day_number+@overflow+4)%7]
+					Chronos.string(language ? Chronos.language(language) : @language, :dayname, (@day_number+@overflow+4)%7)
 				rescue
 					raise NoDatePart unless @day_number
 					raise
@@ -294,7 +354,7 @@ module Chronos
 			# the monthname in the given language or the Datetime-instances default language
 			# Datetime.civil(2000,1,1).month_name # => "January"
 			def month_name(language=nil)
-				Chronos.string(Chronos.language(language || @language), :monthname, month-1)
+				Chronos.string(language ? Chronos.language(language) : @language, :monthname, month-1)
 			end
 	
 			# ISO 8601 week
@@ -368,11 +428,11 @@ module Chronos
 				end
 			end
 			
-			# the absolute fraction - the internal representation of the time
-			# together with second_number
+			# the absolute fraction of a second
+			# returned as a rational if Rational was required, a Float otherwise
 			def fraction
 				begin
-					@ps_number.divmod(1_000_000_000_000).last.quo(1_000_000_000_000)
+					@ps_number.modulo(PS_IN_SECOND).quo(PS_IN_SECOND)
 				rescue => e
 					raise NoTimePart unless @ps_number
 					raise
@@ -382,7 +442,7 @@ module Chronos
 			# the microseconds (0..999999, if it has a time part)
 			def usec
 				begin
-					@ps_number.div(1_000_000).divmod(1_000_000).last
+					@ps_number.div(PS_IN_MICROSECOND).modulo(PS_IN_MICROSECOND)
 				rescue => e
 					raise NoTimePart unless @ps_number
 					raise
@@ -410,38 +470,38 @@ module Chronos
 				else
 					case unit
 						when :second
-							overflow, second_number = *(@second_number+step).divmod(86400)
+							overflow, ps_number = *(@ps_number+step*PS_IN_SECOND).divmod(PS_IN_DAY)
 							day_number = @day_number ? @day_number + overflow : nil
-							Datetime.new(day_number, second_number, @timezone, @language)
+							Datetime.new(day_number, ps_number, @timezone, @language)
 						when :minute
-							overflow, second_number = *(@second_number+(step*60)).divmod(86400)
+							overflow, ps_number = *(@ps_number+(step*PS_IN_MINUTE)).divmod(PS_IN_DAY)
 							day_number = @day_number ? @day_number + overflow : nil
-							Datetime.new(day_number, second_number, @timezone, @language)
+							Datetime.new(day_number, ps_number, @timezone, @language)
 						when :hour
-							overflow, second_number = *(@second_number+(step*3600)).divmod(86400)
+							overflow, ps_number = *(@ps_number+(step*PS_IN_HOUR)).divmod(PS_IN_DAY)
 							day_number = @day_number ? @day_number + overflow : nil
-							Datetime.new(day_number, second_number, @timezone, @language)
+							Datetime.new(day_number, ps_number, @timezone, @language)
 						when :day
 							day_number = @day_number + step.floor
-							Datetime.new(day_number, @second_number, @timezone, @language)
+							Datetime.new(day_number, @ps_number, @timezone, @language)
 						when :monday,:tuesday,:wednesday,:thursday,:friday,:saturday,:sunday
 							begin
-								Datetime.new(@day_number+(DAY_OF_WEEK[unit]-@day_number-5)%7+1+7*(step >= 1 ? step-1 : step).floor, @second_number, @timezone, @language)
+								Datetime.new(@day_number+(DAY_OF_WEEK[unit]-@day_number-5)%7+1+7*(step >= 1 ? step-1 : step).floor, @ps_number, @timezone, @language)
 							rescue
 								raise NoDatePart unless @day_number
 								raise
 							end
 						when :week
 							day_number = @day_number + step.floor*7
-							Datetime.new(day_number, @second_number, @timezone, @language)
+							Datetime.new(day_number, @ps_number, @timezone, @language)
 						when :month
 							overflow, month = *(month()-1+step.floor).divmod(12)
 							year   = (year()+overflow).to_f
 							leap   = year.leap_year?
-							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month+1]
+							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 							leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 							doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month]+day_of_month
-							Datetime.new(year*365+leaps+doy, @second_number, @timezone, @language)
+							Datetime.new(year*365+leaps+doy, @ps_number, @timezone, @language)
 						when :year
 							month = month()
 							year  = (year()+step.floor).to_f
@@ -449,7 +509,7 @@ module Chronos
 							raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 							leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 							doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+day_of_month
-							Datetime.new(year*365+leaps+doy, @second_number, @timezone, @language)
+							Datetime.new(year*365+leaps+doy, @ps_number, @timezone, @language)
 					end
 				end
 			end
@@ -462,20 +522,19 @@ module Chronos
 			def current(unit, at=0)
 				case unit
 					when :second
-						fraction = at%1
-						second_number = (@second_number-second+at.floor)
-						Datetime.new(@day_number, second_number, fraction, @timezone, @language)
+						ps_number = (@ps_number-(at*PS_IN_SECOND).to_i)
+						Datetime.new(@day_number, ps_number, fraction, @timezone, @language)
 					when :minute
-						second_number = (@second_number-(minute*60)+(at*60).floor)
-						Datetime.new(@day_number, second_number, @timezone, @language)
+						ps_number = (@ps_number-(minute*PS_IN_MINUTE)+(at*PS_IN_MINUTE).floor)
+						Datetime.new(@day_number, ps_number, @timezone, @language)
 					when :hour
-						second_number = (@second_number-(hour*3600)+(at*3600).floor)
-						Datetime.new(@day_number, second_number, @timezone, @language)
+						ps_number = (@ps_number-(hour*PS_IN_HOUR)+(at*PS_IN_HOUR).floor)
+						Datetime.new(@day_number, ps_number, @timezone, @language)
 					when :day
 						raise ArgumentError, "Does not make sense"
 					when :monday,:tuesday,:wednesday,:thursday,:friday,:saturday,:sunday
 						begin
-							Datetime.new(@day_number-(@day_number+4)%7+DAY_OF_WEEK[unit], @second_number, @timezone, @language)
+							Datetime.new(@day_number-(@day_number+4)%7+DAY_OF_WEEK[unit], @ps_number, @timezone, @language)
 						rescue
 							raise NoDatePart unless @day_number
 							raise
@@ -486,15 +545,15 @@ module Chronos
 						fdy = year*365+leaps+1 # first day of year
 						fwd = (fdy+4)%7 # first day of years weekday
 						off = (10-fwd)%7-3   # calculate offset of the first week
-						Datetime.new(fdy+off+at*7+day_of_week(), @second_number, @timezone, @language)
+						Datetime.new(fdy+off+at*7+day_of_week(), @ps_number, @timezone, @language)
 					when :month
 						month  = at.floor
 						year   = year().to_f
 						leap   = year.leap_year?
-						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month+1]
+						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 						leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 						doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month]+day_of_month
-						Datetime.new(year*365+leaps+doy, @second_number, @timezone, @language)
+						Datetime.new(year*365+leaps+doy, @ps_number, @timezone, @language)
 					when :year
 						month = month()
 						year  = at.floor.to_f
@@ -502,7 +561,7 @@ module Chronos
 						raise ArgumentError, "Invalid day of month (#{year}-#{month}-#{day_of_month})" if day_of_month > (leap ? DAYS_IN_MONTH2 : DAYS_IN_MONTH1)[month]
 						leaps  = (year/4.0).ceil-(year/100.0).ceil+(year/400.0).ceil
 						doy    = (leap ? DAYS_UNTIL_MONTH2 : DAYS_UNTIL_MONTH1)[month-1]+day_of_month
-						Datetime.new(year*365+leaps+doy, @second_number, @timezone, @language)
+						Datetime.new(year*365+leaps+doy, @ps_number, @timezone, @language)
 				end
 			end
 	
@@ -617,12 +676,12 @@ module Chronos
 			def to_s
 				if @day_number then
 					if @ps_number then
-						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, *(offset/60).floor.divmod(60)
+						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, *(@offset/60).floor.divmod(60)
 					else
 						sprintf ISO_8601_Date, year, month, day
 					end
 				else
-					sprintf ISO_8601_Time, hour, minute, second, *(offset/60).floor.divmod(60)
+					sprintf ISO_8601_Time, hour, minute, second, *(@offset/60).floor.divmod(60)
 				end
 			end
 

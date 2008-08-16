@@ -41,9 +41,40 @@ require 'yaml'
 #   Chronos::Datetime.import(Time.now) # => Chronos::Datetime
 #
 module Chronos
+	# picoseconds in a nanosecond
+	PS_IN_NANOSECOND  = 1_000
+
+	# picoseconds in a microsecond
+	PS_IN_MICROSECOND = PS_IN_NANOSECOND * 1_000
+
+	# picoseconds in a microsecond
+	PS_IN_MILLISECOND = PS_IN_MICROSECOND * 1_000
+
+	# picoseconds in a second
+	PS_IN_SECOND      = PS_IN_MILLISECOND * 1_000
+	
+	# picoseconds in a minute
+	PS_IN_MINUTE      = PS_IN_SECOND * 60
+
+	# picoseconds in an hour
+	PS_IN_HOUR        = PS_IN_MINUTE * 60
+
+	# picoseconds in a day
+	PS_IN_DAY         = PS_IN_HOUR * 24
+
+	# picoseconds in a week
+	PS_IN_WEEK         = PS_IN_DAY * 7
+
+	# The extension YAML files use
 	YAMLExt           = '.yaml'.freeze
+	
+	# The full path of the zones.tab file
 	ZonesFile         = File.join(File.dirname(__FILE__), "chronos", "data", "zones.tab").freeze
+	
+	# The full path of the marshalled zones data cache file
 	ZonesData         = File.join(File.dirname(__FILE__), "chronos", "data", "zones.marshal").freeze
+	
+	
 	DefaultizeStrings = [
 		:picosecond,
 		:nanosecond,
@@ -57,18 +88,39 @@ module Chronos
 		:month,
 		:year
 	].freeze
-		
+	
+	class LocalizationError < RuntimeError; end
+	
 	@strings = {}
 
 	class <<self
 		attr_reader :calendar
 		attr_reader :strings
 		
+		# TODO: refactor this ugly piece of code
 		def string(lang, key, quantity=nil)
-			if quantity then
-				@strings[lang][key][quantity]
+			if localized1 = @strings[lang] then
+				if localized2 = localized1[key] then
+					quantity ? localized2[quantity] : localized2
+				elsif lang != 'en_US' && localized1 = @strings['en_US'] then
+					if localized2 = localized1[key] then
+						warn "Couldn't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}, falling back to en_US"
+						quantity ? localized2[quantity] : localized2
+					else
+						raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
+					end
+				else
+					raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
+				end
+			elsif lang != 'en_US' && localized1 = @strings['en_US'] then
+				if localized2 = localized1[key] then
+					warn "Couldn't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}, falling back to en_US"
+					quantity ? localized2[quantity] : localized2
+				else
+					raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
+				end
 			else
-				@strings[lang][key]
+				raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
 			end
 		end
 
@@ -85,7 +137,12 @@ module Chronos
 		# Normalize the language to something Chronos can work with (or raise)
 		def normalize_language(val) # :nodoc:
 			raise ArgumentError, "Invalid language #{val.inspect}" unless lang = val[/^[a-z]{2}_[A-Z]{2}/]
-			lang
+			unless @strings.has_key?(language) then
+				warn "Language #{lang} not available, falling back to en_US"
+				'en_US'
+			else
+				lang
+			end
 		end
 		
 		# Normalize the timezone to something Chronos can work with (or raise)

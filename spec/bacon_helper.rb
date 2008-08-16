@@ -4,6 +4,7 @@ begin
 rescue LoadError
 	warn "Running without rubygems. Make sure bacon is at least 1.0.0"
 end
+begin require 'test/unit'; rescue LoadError; end
 require 'bacon'
 require 'flexmock'
 
@@ -13,7 +14,7 @@ $LOAD_PATH.unshift(base+'/spec') unless $LOAD_PATH.include?(base+'/spec')
 
 include FlexMock::MockContainer
 
-Test::Unit.run = false  if defined? Test::Unit
+Test::Unit.run = false
 
 module Bacon
   class Context

@@ -1,0 +1,85 @@
+= NOTES
+
+== Daylight Savings Time (DST)
+* Math operations will keep the DST sticky, even if the resulting datetime would have a different
+  result for dst?.
+  Example:
+    cest_0230  = Datetime.civil(2008,10,26,2,30).in("CEST") # => 2008-10-26T02:30:00+02:00
+    cest_0330  = cest_0230+1.hour                           # => 2008-10-26T03:30:00+02:00
+    cet_0230   = Datetime.civil(2008,10,26,2,30).in("CET")  # => 2008-10-26T02:30:00+01:00
+    cet_0330   = Datetime.civil(2008,10,26,3,30).in("CET")  # => 2008-10-26T03:30:00+01:00
+    normalized = cest_0330.normalized_dst                   # => 2008-10-26T02:30:00+01:00
+    cest_0230.dst?                # => true
+    cest_0330.dst?                # => false
+    cet_0230.dst?                 # => false
+    cet_0330.dst?                 # => false
+    normalized.dst?               # => false
+    cest_0330.timezone.name       # => "CEST"; adding a duration will keep the timezone
+    (cest_0330 - cest_0330).hours # => 0
+    (cest_0330 - cest_0230).hours # => 1
+    (cet_0330 - cest_0330).hours  # => 1
+    (cet_0330 - cest_0230).hours  # => 2
+    normalized == cest_0330       # => true (== only checks day_number and ps_number)
+    normalized.eql?(cest_0330)    # => false (eql? additionally checks timezone and language)
+* Deviating from the above, DST does not influence math:
+    result = somedatetime + Duration.new(:hours => 2)
+    result.hour == somedatetime.hour+2
+  Is guaranteed to be true, no matter whether you cross a DST border there.
+  If we respected DST, it could be +1, +2 or +3, depending on whether we cross the DST
+  border in one or the other direction or not at all.
+* DST being active can be checked by Datetime#dst?, which returns true/false if a DST rule
+  is applicable and nil if no DST rule is applicable. No rule being applicable is the case
+  for dates in the future (since the DST rules might change) and for timezones which simply
+  don't have DST.
+* Getting the datetime in the timezone with the correct DST applied is done via #normalized_dst
+  E.g. if you got a result from an addition, subtraction, parsing that gives you a datetime
+  with timezone CEST (which implies DST is true) but at a date where DST is off, you can
+  use #normalized_dst and the resulting Datetime will be in CET (which implies DST is false)
+
+== Leap seconds
+* Leap seconds do not influence math
+    result = somedatetime + Duration.new(:seconds => 60)
+    result.minute = somedatetime.minute+1
+   Is guaranteed to be true. If we respected leap seconds for calculations, this would
+   not be guaranteed since a minute could have 61 seconds (when you cross the leap second).
+* Parsing a datetime which has the leapsecond set will be treated as the normal 60 value for
+  second (which means 'infinitesimally shortly before the change to the next minute')
+
+== Leap years
+* Leap years DO influence math
+    result = somedatetime + Duration.new(:days => 365)
+    result.year = somedatetime.year + 1
+  Is NOT guaranteed to be true.
+
+== Infinitesimally shortly before change of the bigger unit
+* You can express a time infinitesimally shortly before the same time with one unit switching
+  (e.g. hour switching from 1 to 2) by specifying the next smaller unit to max+1.
+  Example:
+    a = Datetime.today.at(12,59,59.9999999)
+    b = Datetime.today.at(12,60)
+    c = Datetime.today.at(13,00)
+    a < b # => true
+    b < c # => true
+
+== Subtracting a datetime from a datetime
+* Subtracting a datetime from another will result in an Interval
+* Intervals have the guaranteed property of Interval#start <= Interval#end
+* Converting a gregorian Interval to a Duration will create a gregorian Duration, using both, months
+  and picoseconds (the alternative choice would have been to use picoseconds only).
+* The direction is preserved, so if datetime_a < datetime_b and you do
+    datetime_a - datetime_b
+  Then the resulting Interval's start will be datetime_a, its end will be datetime_b. All units will
+  be positive. But the moment you convert it to a Duration, the units will be negative.
+
+== The problem with +/- and datetimes/durations
+* Adding and subtracting durations to and from datetimes depends on the operands.
+  This means that adding a duration to a datetime and subtracting the same duration from the
+  result can result in a new datetime that is not equal to the original datetime:
+    (a_datetime + a_duration) - a_duration == a_datetime # is NOT guaranteed to be true
+  An example where this happens:
+    a = Datetime.civil(2007,1,31) # => 2007-01-31
+    b = a + 1.month               # => 2007-02-28
+    c = b - 1.month               # => 2007-01-28
+    a == c                        # => false
+  Nota bene: datetime + (duration - duration) == datetime # IS guaranteed, since
+  duration - duration will result in a zero duration.
