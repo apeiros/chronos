@@ -37,31 +37,31 @@ module Chronos
 		end
 		
 		def -@
-			self.class.new(*self.to_a.map { |e| -e })
+			self.class.new(*(self.to_a(true).map { |e| -e }+[@language]))
 		end
 
 		def +(other)
-			self.class.new(*self.to_a.zip(other.to_a).map { |a,b| a+b })
+			self.class.new(*(self.to_a(true).zip(other.to_a).map { |a,b| a+b }+[@language]))
 		end
 		
 		def -(other)
-			self.class.new(*self.to_a.zip(other.to_a).map { |a,b| a-b })
+			self.class.new(*(self.to_a(true).zip(other.to_a).map { |a,b| a-b }+[@language]))
 		end
 
 		def *(other)
-			self.class.new(*self.to_a.map { |e| e*other })
+			self.class.new(*(self.to_a(true).map { |e| e*other }+[@language]))
 		end
 
 		def /(other)
-			self.class.new(*self.to_a.map { |e| e/other })
+			self.class.new(*(self.to_a(true).map { |e| e/other }+[@language]))
 		end
 
 		def div(other)
-			self.class.new(*self.to_a.map { |e| e.div(other) })
+			self.class.new(*(self.to_a(true).map { |e| e.div(other) }+[@language]))
 		end
 		
 		def quo(other)
-			self.class.new(*self.to_a.map { |e| e.quo(other) })
+			self.class.new(*(self.to_a(true).map { |e| e.quo(other) }+[@language]))
 		end
 		
 		def %(other)
@@ -74,8 +74,7 @@ module Chronos
 		def split
 			lang  = [@language]
 			klass = self.class
-			ary   = to_a
-			ary.pop
+			ary   = to_a(true)
 			(0...(ary.size)).zip(ary).map { |i,e|
 				init = Array.new(ary.size, 0)+lang
 				init[i] = e
@@ -84,8 +83,8 @@ module Chronos
 		end
 		
 		# An array with the atomic units and the language of this Duration
-		def to_a
-			[@picoseconds, @language]
+		def to_a(exclude_language=nil)
+			exclude_language ? [@picoseconds] : [@picoseconds, @language]
 		end
 		
 		def to_hash

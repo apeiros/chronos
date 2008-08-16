@@ -224,9 +224,9 @@ module Chronos
 			# You can add a Duration
 			def +(duration)
 				duration        = duration.class == Chronos::Duration::Gregorian ? duration : Chronos::Duration::Gregorian.import(duration)
-				year, month     = (year()*12+month()+duration.months).divmod(12)
-				over, ps_number = (@picoseconds+duration.picoseconds).divmod(Chronos::PS_IN_DAY)
-				day_number      = Chronos::Datetime::Gregorian.date_components(year, month, nil, nil, day_of_month(), nil, :reduce)+over
+				year, month     = (year()*12+(month()-1)+duration.months).divmod(12)
+				over, ps_number = (@ps_number+duration.picoseconds).divmod(Chronos::PS_IN_DAY)
+				day_number      = Chronos::Datetime::Gregorian.date_components(year, month+1, nil, nil, day_of_month(), nil, :reduce)+over
 				Chronos::Datetime::Gregorian.new(day_number, ps_number, @timezone, @language)
 			end
 

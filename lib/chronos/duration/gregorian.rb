@@ -162,8 +162,8 @@ module Chronos
 				@months.quo(12)
 			end
 			
-			def to_a
-				[@picoseconds, @months, @language]
+			def to_a(exclude_language=nil)
+				exclude_language ? [@picoseconds, @months] : [@picoseconds, @months, @language]
 			end
 			
 			def to_hash

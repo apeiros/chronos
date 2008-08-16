@@ -213,12 +213,7 @@ module Chronos
 		# You can add a Duration
 		def +(duration)
 			duration      = duration.to_duration
-			tmp           = self.class.new(@day_number, @ps_number)
-			years, months = (tmp.month+duration.months-1).divmod(12)
-			days, sec     = (@ps_number+duration.picoseconds).divmod(86400)
-			tmp           = self.class.civil(tmp.year+years,tmp.months+1,tmp.day)
-			day_number    = temporary.day_number+days
-			self.class.new(day_number, sec, @timezone, @language)
+			self.class.new(@day_number, @ps_number+duration.picoseconds(:days), @timezone, @language)
 		end
 
 		def -(other)
