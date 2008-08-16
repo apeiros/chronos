@@ -14,8 +14,8 @@ module Chronos
 	class Duration
 
 		class Gregorian < ::Chronos::Duration
-			FormatToS     = "%d months %dps (%s)".freeze
-			FormatInspect = "#<%s:0x%08x %d months %dps (%s)>".freeze
+			FormatToS     = "%dps %d months (%s)".freeze
+			FormatInspect = "#<%s:0x%08x %dps %d months (%s)>".freeze
 
 			# if you want to estimate minimum seconds in months
 			MinSecondsInMonths = [
@@ -160,7 +160,7 @@ module Chronos
 			end
 			
 			def to_a
-				[@months, @picoseconds, @language]
+				[@picoseconds, @months, @language]
 			end
 			
 			def to_hash

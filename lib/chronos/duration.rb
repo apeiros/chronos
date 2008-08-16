@@ -77,7 +77,9 @@ module Chronos
 			ary   = to_a
 			ary.pop
 			(0...(ary.size)).zip(ary).map { |i,e|
-				klass.new(*(Array.new(ary.size, 0)+lang))
+				init = Array.new(ary.size, 0)+lang
+				init[i] = e
+				klass.new(*init)
 			}
 		end
 		
