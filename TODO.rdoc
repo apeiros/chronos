@@ -3,10 +3,9 @@
 
 = TODO
 == Pre-Release
-* Switch @second_number to @ps_number
-* Change testcases to bacon specs
 * Validate Datetime API
 * Refactor Duration and Interval (Gregorian)
+* Complete specs
 
 == Low priority
 * Write extensive parsing suite, there should be 4 kinds of parsers:
@@ -28,6 +27,17 @@
 * chronos/time_dropin - Allow Chronos::Datetime::Gregorian to act as a Time drop-in
 * chronos/date_dropin - Allow Chronos::Datetime::Gregorian to act as a Date drop-in
 * Import Scheduler
+* Handle recurring
+* Natural language parsers
+* Extractors (extract datetimes, intervals and durations from plaintext)
+* Improve formatters
+* Add other calendary systems
+  * Chinese
+  * Jewish
+  * Indian
+  * Julian
+  * Discordian
+
 
 = UNHAPPY
 * DateTime#strftime("%Z") does not indicate if it's in a timezone with active DST or not,
