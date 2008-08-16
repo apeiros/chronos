@@ -143,7 +143,7 @@ module Chronos
 	
 			# convert hours, minutes, seconds and fraction to picoseconds required by ::new
 			def self.ps_components(hour, minute, second, fraction=nil, ps=nil, offset=nil)
-				(hour*3600+minute*60+second+(fraction||0)-(offset||0))*1_000_000_000_000+(ps||0)
+				(hour*3600+minute*60+second+(fraction||0)-(offset||0))*PS_IN_SECOND+(ps||0)
 			end
 			
 			# Get a day_number from various date components.

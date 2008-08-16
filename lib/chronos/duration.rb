@@ -30,7 +30,7 @@ module Chronos
 		end
 
 		def +@
-			dup
+			self
 		end
 		
 		def -@
@@ -73,6 +73,10 @@ module Chronos
 		
 		def to_hash
 			{:ps => @picoseconds, :picoseconds => @picoseconds}
+		end
+		
+		def to_duration
+			self
 		end
 		
 		def values_at(*keys)
