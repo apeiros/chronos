@@ -16,6 +16,9 @@ module Chronos
 	# A duration has no start- nor end-point.
 	# Also see Interval
 	class Duration
+		FormatToS     = "%dps (%s)".freeze
+		FormatInspect = "#<%s:0x%08x %dps (%s)>".freeze
+
 		def self.with(parts, lang)
 			new(parts[:picoseconds] || parts[:ps] || 0)
 		end
@@ -103,11 +106,11 @@ module Chronos
 
 		# return a readable representation
 		def to_s
-			sprintf(FormatToS, *self)
+			sprintf(self.class::FormatToS, *self)
 		end
 
 		def inspect # :nodoc:
-			sprintf(FormatInspect, self.class, object_id<<1, *self)
+			sprintf(self.class::FormatInspect, self.class, object_id<<1, *self)
 		end
 	end
 end
