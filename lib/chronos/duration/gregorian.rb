@@ -7,6 +7,9 @@
 
 
 require 'chronos'
+require 'chronos/calendar/gregorian'
+require 'chronos/datetime/gregorian'
+require 'chronos/duration/gregorian'
 
 
 
