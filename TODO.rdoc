@@ -40,7 +40,7 @@
   * Indian
   * Julian
   * Discordian
-* Full documentation, including guides/howtos
+* Full documentation, including guides/howtos/caveeats
 
 
 = UNHAPPY

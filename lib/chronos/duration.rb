@@ -67,6 +67,18 @@ module Chronos
 			# Duration % Symbol -> shortcut, e.g. duration % :hour -> duration % 1.hour
 		end
 		
+		# Split the duration into durations with each only one of the atomic units set
+		def split
+			lang  = [@language]
+			klass = self.class
+			ary   = to_a
+			ary.pop
+			(0...(ary.size)).zip(ary).map { |i,e|
+				klass.new(*(Array.new(ary.size, 0)+lang))
+			}
+		end
+		
+		# An array with the atomic units and the language of this Duration
 		def to_a
 			[@picoseconds, @language]
 		end
