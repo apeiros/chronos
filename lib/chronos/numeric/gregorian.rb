@@ -73,3 +73,4 @@ end
 
 class Numeric
 	include Chronos::Numeric::Gregorian
+end
