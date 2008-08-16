@@ -62,6 +62,9 @@ module Chronos
 	# picoseconds in a day
 	PS_IN_DAY         = PS_IN_HOUR * 24
 
+	# picoseconds in a week
+	PS_IN_WEEK         = PS_IN_DAY * 7
+
 	# The extension YAML files use
 	YAMLExt           = '.yaml'.freeze
 	

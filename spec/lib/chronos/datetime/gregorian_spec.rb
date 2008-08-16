@@ -7,65 +7,100 @@ require 'time'
 require 'date'
 require 'chronos/datetime/gregorian'
 
-describe 'Chronos::Datetime::Gregorian.iso_8601' do
-	it 'should parse all valid formats correctly' do
-		[
-			'2001-12-31T09:41:29+02:00'
-		].each { |format|
-			proc { Chronos::Datetime::Gregorian.iso_8601(format) }.should.not.raise
-			Chronos::Datetime::Gregorian.iso_8601(format).should.be.kind_of Chronos::Datetime::Gregorian
-		}
-	end
-end
+GDT = Chronos::Datetime::Gregorian
 
-describe 'Chronos::Datetime::Gregorian should be consistent over a full cycle (400 years)' do
-	it '???' do
-		days				 = [nil, 31,28,31,30,31,30,31,31,30,31,30,31]
-		init         = Chronos::Datetime::Gregorian.civil(1999,1,1)
-		day_of_month = nil
-		day_of_week  = init.day_of_week
-		day_number	 = init.day_number
-		1999.upto(2401) { |year| # test a bit more than 1 full cycle, luckily weekdays have a full cycle over 400 years too
-			puts "year: #{year}" if year%100 == 0
-			day_of_year = 1
-			1.upto(12) { |month|
-				ldim = days[month] + ((month == 2 && Chronos::Datetime::Gregorian.leap_year?(year)) ? 1 : 0)
-				1.upto(ldim) { |day_of_month|
-					date1 = Chronos::Datetime::Gregorian.civil(year, month, day_of_month)
-					date2 = Chronos::Datetime::Gregorian.ordinal(year, day_of_year)
-					date3 = Chronos::Datetime::Gregorian.commercial(date1.commercial_year, date1.week, day_of_week)
-					date4 = Date.civil(year, month, day_of_month)
-					
-					# test if consistent with Time
-					date4.year.should.be.equal(date1.year)
-					date4.cwyear.should.be.equal(date1.commercial_year)
-					date4.month.should.be.equal(date1.month)
-					date4.strftime("%V").to_i.should.be.equal(date1.week)
-					date4.yday.should.be.equal(date1.day_of_year)
-					date4.day.should.be.equal(date1.day_of_month)
-					((date4.wday+6)%7).should.be.equal(date1.day_of_week)
-					
-					# test if different constructors yield the same
-					date1.should.be.equal(date2)
-					date1.should.be.equal(date3)
-					
-					# test incremental integrity
-					day_number.should.be.equal(date1.day_number)
-					year.should.be.equal(date1.year)
-					day_of_year.should.be.equal(date1.day_of_year)
-					month.should.be.equal(date1.month)
-					day_of_month.should.be.equal(date1.day_of_month)
-					day_of_week.should.be.equal(date1.day_of_week)
+describe 'Chronos::Datetime::Gregorian' do
+	describe 'creating valid dates' do
+		it 'Should be able to create a civil date' do
+			proc {
+				GDT.civil(2008, 10, 20)
+			}.should.not.raise
+		end
 
-					day_number	+= 1
-					day_of_year += 1
-					day_of_week	 = (day_of_week+1)%7
+		it 'Should be able to create an ordinal date' do
+			proc {
+				GDT.ordinal(2008, 200)
+			}.should.not.raise
+		end
+
+		it 'Should be able to create a commercial date' do
+			proc {
+				GDT.commercial(2008, 5, 11)
+			}.should.not.raise
+		end
+
+		describe '::iso_8601' do
+			it 'Should parse YYYY-MM-DD>T<HH:MM:SS±HH:SS correctly' do
+				result = nil
+				proc {
+					result = GDT.iso_8601('2001-12-31T09:41:29+02:00')
+				}.should.not.raise
+				result.year.should.be 2001
+				result.month.should.be 12
+				result.day_of_month.should.be 31
+				result.hour.should.be 9
+				result.minute.should.be 41
+				result.second.should.be 29
+				result.offset.in_seconds.should.be 7200
+			end
+		end
+	end # describe creating
+
+=begin
+	describe 'consistency in advanding, creation and values'
+		describe 'should be consistent over a full cycle (402 years)' do
+			it '???' do
+				days				 = [nil, 31,28,31,30,31,30,31,31,30,31,30,31]
+				init         = Chronos::Datetime::Gregorian.civil(1999,1,1)
+				day_of_month = nil
+				day_of_week  = init.day_of_week
+				day_number	 = init.day_number
+				1999.upto(2401) { |year| # test a bit more than 1 full cycle, luckily weekdays have a full cycle over 400 years too
+					puts "year: #{year}" if year%100 == 0
+					day_of_year = 1
+					1.upto(12) { |month|
+						ldim = days[month] + ((month == 2 && Chronos::Datetime::Gregorian.leap_year?(year)) ? 1 : 0)
+						1.upto(ldim) { |day_of_month|
+							date1 = Chronos::Datetime::Gregorian.civil(year, month, day_of_month)
+							date2 = Chronos::Datetime::Gregorian.ordinal(year, day_of_year)
+							date3 = Chronos::Datetime::Gregorian.commercial(date1.commercial_year, date1.week, day_of_week)
+							date4 = Date.civil(year, month, day_of_month)
+							
+							# test if consistent with Time
+							date4.year.should.be.equal(date1.year)
+							date4.cwyear.should.be.equal(date1.commercial_year)
+							date4.month.should.be.equal(date1.month)
+							date4.strftime("%V").to_i.should.be.equal(date1.week)
+							date4.yday.should.be.equal(date1.day_of_year)
+							date4.day.should.be.equal(date1.day_of_month)
+							((date4.wday+6)%7).should.be.equal(date1.day_of_week)
+							
+							# test if different constructors yield the same
+							date1.should.be.equal(date2)
+							date1.should.be.equal(date3)
+							
+							# test incremental integrity
+							day_number.should.be.equal(date1.day_number)
+							year.should.be.equal(date1.year)
+							day_of_year.should.be.equal(date1.day_of_year)
+							month.should.be.equal(date1.month)
+							day_of_month.should.be.equal(date1.day_of_month)
+							day_of_week.should.be.equal(date1.day_of_week)
+		
+							day_number	+= 1
+							day_of_year += 1
+							day_of_week	 = (day_of_week+1)%7
+						}
+						proc {
+							Chronos::Datetime::Gregorian.civil(year, month, day_of_month+1)
+						}.should.raise
+					}
 				}
-				#assert_raise(ArgumentError) { Chronos::Datetime::Gregorian.civil(year, month, day_of_month+1) }
-			}
-		}
-	end
-end
+			end
+		end
+	end # describe consistency
+=end
+end # describe Chronos::Datetime::Gregorian
 
 __END__
 class TestDatetime < Test::Unit::TestCase
