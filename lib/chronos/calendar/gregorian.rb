@@ -16,6 +16,8 @@ require 'chronos/interval/gregorian'
 module Chronos
 	class Calendar
 		class Gregorian < ::Chronos::Calendar
+			Inspect = "#<%s %s>".freeze
+
 			class <<self
 				def method_missing(*args, &block)
 					new(Chronos::Datetime::Gregorian.send(*args, &block))
@@ -79,6 +81,13 @@ module Chronos
 				else
 					r
 				end
+			end
+			
+			def inspect
+				sprintf Inspect,
+					self.class,
+					@datetime
+				# /sprintf
 			end
 		end # Gregorian
 	end # Calendar
