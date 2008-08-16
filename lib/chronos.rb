@@ -88,18 +88,39 @@ module Chronos
 		:month,
 		:year
 	].freeze
-		
+	
+	class LocalizationError < RuntimeError; end
+	
 	@strings = {}
 
 	class <<self
 		attr_reader :calendar
 		attr_reader :strings
 		
+		# TODO: refactor this ugly piece of code
 		def string(lang, key, quantity=nil)
-			if quantity then
-				@strings[lang][key][quantity]
+			if localized1 = @strings[lang] then
+				if localized2 = localized1[key] then
+					quantity ? localized2[quantity] : localized2
+				elsif lang != 'en_US' && localized1 = @strings['en_US'] then
+					if localized2 = localized1[key] then
+						warn "Couldn't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}, falling back to en_US"
+						quantity ? localized2[quantity] : localized2
+					else
+						raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
+					end
+				else
+					raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
+				end
+			elsif lang != 'en_US' && localized1 = @strings['en_US'] then
+				if localized2 = localized1[key] then
+					warn "Couldn't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}, falling back to en_US"
+					quantity ? localized2[quantity] : localized2
+				else
+					raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
+				end
 			else
-				@strings[lang][key]
+				raise LocalizationError, "Can't localize #{key.inspect} for #{lang} with quantity #{quantity.inspect}"
 			end
 		end
 
