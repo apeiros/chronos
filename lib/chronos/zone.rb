@@ -29,6 +29,7 @@ module Chronos
 		@by_region = {}
 
 		# the UTC timezones, offset in seconds
+		#:stopdoc:
 		Offset	= {
 			:'UTC-12'    => -43200,
 			:'UTC-11'    => -39600,
@@ -72,6 +73,7 @@ module Chronos
 			:'UTC+13'    =>  46800,
 			:'UTC+14'    =>  50400,
 		}
+		#:startdoc:
 
 		# map old/military timezone names to UTC
 		# corresponding utc, isDST[BOOL]

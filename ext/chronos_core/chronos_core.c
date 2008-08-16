@@ -13,6 +13,12 @@ int DAYS_UNTIL_MONTH1[] = {0,31,59,90,120,151,181,212,243,273,304,334,365};
 int DAYS_UNTIL_MONTH2[] = {0,31,60,91,121,152,182,213,244,274,305,335,366};
 
 VALUE
+datetime_gregorian__iso8601(VALUE self, VALUE string, VALUE language)
+{
+	
+}
+
+VALUE
 datetime_gregorian__components(int argc, VALUE *argv, VALUE self)
 {
 	long cyear, cday_number; // those should/will be a 64bit int

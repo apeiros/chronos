@@ -26,6 +26,7 @@ Project.meta.feature_requests = 'http://'
 Project.meta.use_git          = true
 
 Project.manifest.ignore       = %w[web/**/*]
+Project.rdoc.exclude         += %w[lib/**/*.yaml ext/**/*]
 
 Project.rubyforge.project     = 'chronos'
 Project.rubyforge.path        = 'chronos'

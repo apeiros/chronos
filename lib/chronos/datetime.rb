@@ -102,7 +102,7 @@ module Chronos
 		end
 
 		# create a datetime with only the date part set to the current system date
-		# for timezone/language append a .in(timezone, language) or set a global
+		# for timezone/language append a .in(timezone, language) or set a global
 		# (see Chronos::Datetime)
 		def self.today(timezone=nil, language=nil)
 			# uses Chronos::Datetime::Gregorian::ordinal's code
@@ -115,7 +115,7 @@ module Chronos
 		end
 
 		# create a datetime with date and time part from a unix-epoch-stamp
-		# for timezone/language append a .in(timezone, language) or set a global
+		# for timezone/language append a .in(timezone, language) or set a global
 		# (see Chronos::Datetime)
 		def self.epoch(unix_epoch_time, timezone=nil, language=nil)
 			import(Time.at(unix_epoch_time), timezone, language)
@@ -232,7 +232,7 @@ module Chronos
 		end
 
 		# compare two datetimes.
-		# not allowed if only one of both doesn't have no date.
+		# not allowed if only one of both doesn't have no date.
 		# if only one of both doesn't have time, 0h 0m 0.0s is used as time.
 		def <=>(other)
 			return nil if @day_number.nil? ^ other.day_number.nil? # either both or none must be nil
@@ -283,8 +283,7 @@ module Chronos
 			sprintf Inspect, self.class, @day_number, @ps_number, @timezone, @language
 		end
 		
-		# :nodoc:
-		def eql?(other)
+		def eql?(other) # :nodoc:
 			@ps_number  == other.ps_number &&
 			@day_number == other.day_number &&
 			@timezone   == other.timezone &&

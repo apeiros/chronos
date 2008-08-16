@@ -64,14 +64,14 @@ module Chronos
 			end
 	
 			# create a datetime with date part only from year, month and day_of_month
-			# for timezone/language append a .in(timezone, language) or set a global
+			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.civil(year, month, day_of_month)
 				new(date_components(year, month, nil, nil, day_of_month, nil), nil, nil, nil)
 			end
 	
 			# see Datetime#format
-			# for timezone/language append a .in(timezone, language) or set a global
+			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.commercial(year, week, day_of_week, year_is_commercial=true)
 				raise ArgumentError, "Non commercial years are not yet supported" unless year_is_commercial
@@ -79,7 +79,7 @@ module Chronos
 			end
 	
 			# create a datetime with date part only from year and day_of_year
-			# for timezone/language append a .in(timezone, language) or set a global
+			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.ordinal(year, day_of_year)
 				new(date_components(year, nil, nil, day_of_year, nil, nil), nil, nil, nil)
@@ -87,7 +87,7 @@ module Chronos
 
 			# create a datetime with time part only from hour, minute, second,
 			# fraction of second (alternatively you can use a float as second)
-			# for timezone/language append a .in(timezone, language) or set a global
+			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.at(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
 				new(nil,picoseconds(h,m,s,f), timezone=nil, language=nil)
