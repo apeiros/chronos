@@ -104,7 +104,7 @@ module Chronos
 					:picoseconds
 				)
 				seconds = s+min*60+h*3600+d*86400+w*604800
-				ps     += s*1_000_000_000_000+ms*1_000_000_000+us*1_000_000+ns*1_000
+				ps     += seconds*1_000_000_000_000+ms*1_000_000_000+us*1_000_000+ns*1_000
 				months  = m+y*12
 				new(ps, months, parts[:language])
 			end
