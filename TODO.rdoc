@@ -4,7 +4,7 @@
 = TODO
 == Pre-Release
 * Validate Datetime API
-* Refactor Duration and Interval (Gregorian)
+* Refactor Interval (Gregorian)
 * Complete specs
 * Complete minimal docs
 
