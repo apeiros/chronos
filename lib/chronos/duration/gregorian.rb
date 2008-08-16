@@ -14,6 +14,9 @@ module Chronos
 	class Duration
 
 		class Gregorian < ::Chronos::Duration
+			FormatToS     = "%d months %dps (%s)".freeze
+			FormatInspect = "#<%s:0x%08x %d months %dps (%s)>".freeze
+
 			# if you want to estimate minimum seconds in months
 			MinSecondsInMonths = [
 				0,
@@ -156,36 +159,58 @@ module Chronos
 				@months.quo(12)
 			end
 			
-			# return a readable representation
-			def to_s(inner_zeros=true, leading_zeros=false)
-				if @months == 0 then
-					elements = [
-						[weeks.floor, "weeks", "week"],
-						[days_after_weeks.floor, "days", "day"],
-						[hours_after_days.floor, "hours", "hour"],
-						[minutes_after_hours.floor, "minutes", "minute"],
-						[seconds_after_minutes.floor, "seconds", "second"],
-					]
-					elements.shift while elements[0][0] == 0 unless leading_zeros
-					elements.reject! { |count,x,y| count == 0 } unless inner_zeros
-					elements.map {
-						|count,plural,singular| "#{count} #{count == 1 ? singular : plural}"
-					}.join(" ")
-				elsif @seconds == 0 then
-					elements = [
-						[years.floor, "years", "year"],
-						[months_after_years.floor, "months", "month"],
-					]
-					elements.shift while elements[0][0] == 0 unless leading_zeros
-					elements.reject! { |count,x,y| count == 0 } unless inner_zeros
-					elements.map {
-						|count,plural,singular| "#{count} #{count == 1 ? singular : plural}"
-					}.join(" ")
-				else
-					split.reverse.join(" ")
-				end
+			def to_a
+				[@months, @picoseconds, @language]
 			end
-
+			
+			def to_hash
+				{
+					:years        => years,
+					:months       => @months,
+					:weeks        => weeks,
+					:days         => days,
+					:hours        => hours,
+					:minutes      => minutes,
+					:seconds      => seconds,
+					:milliseconds => milliseconds,
+					:microseconds => microseconds,
+					:nanoseconds  => nanoseconds,
+					:picoseconds  => @picoseconds,
+					:language     => @language,
+				}
+			end
+			
+			# return a readable representation
+			def to_s(drop=:all_zeros, language=nil)
+				elements1 = @months.zero? ? [] : [
+					[years.floor,             :year],
+					[days(:weeks).floor,      :month],
+				]
+				elements2 = @picoseconds.zero? ? [] : [
+					[weeks.floor,                      :week],
+					[days(:weeks).floor,               :day],
+					[hours(:days).floor,               :hour],
+					[minutes(:hours).floor,            :minute],
+					[seconds(:minutes).floor,          :second],
+					[milliseconds(:seconds).floor,     :millisecond],
+					[microseconds(:milliseconds).floor, :microseconds],
+					[nanoseconds(:microseconds).floor,  :nanosecond],
+					[picoseconds(:nanoseconds).floor,   :picosecond],
+				]
+				elements = elements1+elements2
+				case drop
+					when :all_zeros
+						elements.reject! { |count,*rest| count.zero? }
+					when :leading_zeros
+						elements.shift while elements.first.first.zero?
+					when nil
+					else
+						raise ArgumentError, "Unknown directive, #{drop.inspect}"
+				end
+				elements.empty? ? "0" : elements.map { |count, unit|
+					"#{count} #{Chronos.string(language ? Chronos.language(language) : @language, unit, count)}"
+				}.join(", ")
+			end
 		end # Datetime::Gregorian
 	end # Datetime
 end # Chronos
