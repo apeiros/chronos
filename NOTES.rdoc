@@ -66,6 +66,10 @@
 * Intervals have the guaranteed property of Interval#start <= Interval#end
 * Converting a gregorian Interval to a Duration will create a gregorian Duration, using both, months
   and picoseconds (the alternative choice would have been to use picoseconds only).
+* The direction is preserved, so if datetime_a < datetime_b and you do
+    datetime_a - datetime_b
+  Then the resulting Interval's start will be datetime_a, its end will be datetime_b. All units will
+  be positive. But the moment you convert it to a Duration, the units will be negative.
 
 == The problem with +/- and datetimes/durations
 * Adding and subtracting durations to and from datetimes depends on the operands.
