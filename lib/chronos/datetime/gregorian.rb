@@ -285,7 +285,7 @@ module Chronos
 			def day_name(language=nil)
 				language ||= @language
 				begin
-					DAY_NAME[(@day_number+@overflow+4)%7]
+					Chronos.string(language ? Chronos.language(language) : @language, :dayname, (@day_number+@overflow+4)%7)
 				rescue
 					raise NoDatePart unless @day_number
 					raise
@@ -295,7 +295,7 @@ module Chronos
 			# the monthname in the given language or the Datetime-instances default language
 			# Datetime.civil(2000,1,1).month_name # => "January"
 			def month_name(language=nil)
-				Chronos.string(Chronos.language(language || @language), :monthname, month-1)
+				Chronos.string(language ? Chronos.language(language) : @language, :monthname, month-1)
 			end
 	
 			# ISO 8601 week
