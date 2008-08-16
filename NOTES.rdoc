@@ -55,11 +55,17 @@
 * You can express a time infinitesimally shortly before the same time with one unit switching
   (e.g. hour switching from 1 to 2) by specifying the next smaller unit to max+1.
   Example:
-    a = Datetime.with(:date => :today, :hour => 12, :minute => 59, :second => 59.9999999)
-    b = Datetime.with(:date => :today, :hour => 12, :minute => 60)
-    c = Datetime.with(:date => :today, :hour => 12, :minute => 0)
+    a = Datetime.today.at(12,59,59.9999999)
+    b = Datetime.today.at(12,60)
+    c = Datetime.today.at(13,00)
     a < b # => true
     b < c # => true
+
+== Subtracting a datetime from a datetime
+* Subtracting a datetime from another will result in an Interval
+* Intervals have the guaranteed property of Interval#start <= Interval#end
+* Converting a gregorian Interval to a Duration will create a gregorian Duration, using both, months
+  and picoseconds (the alternative choice would have been to use picoseconds only).
 
 == The problem with +/- and datetimes/durations
 * Adding and subtracting durations to and from datetimes depends on the operands.
