@@ -7,6 +7,7 @@
 
 
 require 'chronos'
+require 'chronos/calendar/gregorian'
 require 'chronos/duration/gregorian'
 
 
@@ -67,23 +68,37 @@ module Chronos
 			# create a datetime with date part only from year, month and day_of_month
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.civil(year, month, day_of_month)
-				new(date_components(year, month, nil, nil, day_of_month, nil), nil, nil, nil)
+			def self.civil(year, month, day_of_month, hour=nil, minute=nil, second=nil, timezone=nil, language=nil)
+				ps = nil
+				if hour || minute || second || timezone then
+					timezone = Chronos.timezone(timezone)
+					ps       = ps_components(hour, minute, second, nil, nil, timezone.offset)
+				end
+				new(date_components(year, month, nil, nil, day_of_month, nil), ps, timezone, language)
 			end
 	
 			# see Datetime#format
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.commercial(year, week, day_of_week, year_is_commercial=true)
-				raise ArgumentError, "Non commercial years are not yet supported" unless year_is_commercial
-				new(date_components(year, nil, week, nil, nil, day_of_week), nil, nil, nil)
+			def self.commercial(year, week, day_of_week, hour=nil, minute=nil, second=nil, timezone=nil, language=nil)
+				ps = nil
+				if hour || minute || second || timezone then
+					timezone = Chronos.timezone(timezone)
+					ps       = ps_components(hour, minute, second, nil, nil, timezone.offset)
+				end
+				new(date_components(year, nil, week, nil, nil, day_of_week), ps, timezone, language)
 			end
 	
 			# create a datetime with date part only from year and day_of_year
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
-			def self.ordinal(year, day_of_year)
-				new(date_components(year, nil, nil, day_of_year, nil, nil), nil, nil, nil)
+			def self.ordinal(year, day_of_year, hour=nil, minute=nil, second=nil, timezone=nil, language=nil)
+				ps = nil
+				if hour || minute || second || timezone then
+					timezone = Chronos.timezone(timezone)
+					ps       = ps_components(hour, minute, second, nil, nil, timezone.offset)
+				end
+				new(date_components(year, nil, nil, day_of_year, nil, nil), ps, timezone, language)
 			end
 
 			# create a datetime with time part only from hour, minute, second,
@@ -91,7 +106,8 @@ module Chronos
 			# for timezone/language append a .in(timezone, language) or set a global
 			# (see Chronos::Datetime)
 			def self.at(hour, minute=0, second=0, fraction=0.0, timezone=nil, language=nil)
-				new(nil,picoseconds(h,m,s,f), timezone=nil, language=nil)
+				timezone = Chronos.timezone(timezone)
+				new(nil, ps_components(hour, minute, second, fraction, nil, timezone.offset), timezone, language)
 			end
 			
 			# parses an ISO 8601 string
@@ -143,7 +159,13 @@ module Chronos
 	
 			# convert hours, minutes, seconds and fraction to picoseconds required by ::new
 			def self.ps_components(hour, minute, second, fraction=nil, ps=nil, offset=nil)
-				(hour*3600+minute*60+second+(fraction||0)-(offset||0))*PS_IN_SECOND+(ps||0)
+				(
+					(hour||0)*3600+
+					(minute||0)*60+
+					(second||0)+
+					(fraction||0)-(offset||0)
+				)*PS_IN_SECOND+
+				(ps||0)
 			end
 			
 			# Get a day_number from various date components.
@@ -617,12 +639,12 @@ module Chronos
 			def to_s
 				if @day_number then
 					if @ps_number then
-						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, *(offset/60).floor.divmod(60)
+						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, *(@offset/60).floor.divmod(60)
 					else
 						sprintf ISO_8601_Date, year, month, day
 					end
 				else
-					sprintf ISO_8601_Time, hour, minute, second, *(offset/60).floor.divmod(60)
+					sprintf ISO_8601_Time, hour, minute, second, *(@offset/60).floor.divmod(60)
 				end
 			end
 
