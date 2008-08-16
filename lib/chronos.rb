@@ -116,7 +116,12 @@ module Chronos
 		# Normalize the language to something Chronos can work with (or raise)
 		def normalize_language(val) # :nodoc:
 			raise ArgumentError, "Invalid language #{val.inspect}" unless lang = val[/^[a-z]{2}_[A-Z]{2}/]
-			lang
+			unless @strings.has_key?(language) then
+				warn "Language #{lang} not available, falling back to en_US"
+				'en_US'
+			else
+				lang
+			end
 		end
 		
 		# Normalize the timezone to something Chronos can work with (or raise)
