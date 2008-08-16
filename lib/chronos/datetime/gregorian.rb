@@ -237,7 +237,7 @@ module Chronos
 				elsif klass == Chronos::Datetime::Gregorian then
 					raise "not yet implemented"
 				elsif duration_or_datetime.respond_to?(:to_duration) then
-					self+(-Chronos::Duration::Gregorian.import(duration_or_datetime)
+					self+(-Chronos::Duration::Gregorian.import(duration_or_datetime))
 				else
 					raise "not yet implemented"
 				end
