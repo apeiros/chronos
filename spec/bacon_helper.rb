@@ -1,6 +1,6 @@
 begin
 	require 'rubygems'
-	gem 'bacon', '>= 0.9.0'
+	gem 'bacon', '>= 1.0.0'
 rescue LoadError
 	warn "Running without rubygems. Make sure bacon is at least 1.0.0"
 end
@@ -15,17 +15,6 @@ $LOAD_PATH.unshift(base+'/spec') unless $LOAD_PATH.include?(base+'/spec')
 include FlexMock::MockContainer
 
 Test::Unit.run = false
-
-module Bacon
-  class Context
-    def it(description, &block)
-      return  unless description =~ RestrictName
-      block ||= proc { should.flunk "not implemented" }
-      Counter[:specifications] += 1
-      run_requirement description, block
-    end
-  end
-end
 
 def equal_unordered(expected)
 	lambda { |actual|
