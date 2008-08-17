@@ -5,10 +5,13 @@
 == Pre-Release
 * Validate Datetime API
 * Refactor Interval (Gregorian)
+* Test rake tasks and temporarly remove non-working or fix
 * Complete specs
 * Complete minimal docs
 
 == Low priority
+* Rake task to help localization
+* Spec to test completeness of localizations
 * Write extensive parsing suite, there should be 4 kinds of parsers:
   * Extremely strict format specific parsers, such as Chronos::Datetime::Gregorian::iso8601 which
     parses only and only iso8601 compliant strings and raises if it fails.
