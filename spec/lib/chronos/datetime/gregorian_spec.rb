@@ -11,23 +11,27 @@ GDT = Chronos::Datetime::Gregorian
 
 describe 'Chronos::Datetime::Gregorian' do
 	describe 'creating valid dates' do
-		it 'Should be able to create a civil date' do
+		it 'should be able to create a civil date' do
 			proc {
 				GDT.civil(2008, 10, 20)
 			}.should.not.raise
 		end
 
-		it 'Should be able to create an ordinal date' do
+		it 'should be able to create an ordinal date' do
 			proc {
 				GDT.ordinal(2008, 200)
 			}.should.not.raise
 		end
 
-		it 'Should be able to create a commercial date' do
+		it 'should be able to create a commercial date' do
 			proc {
 				GDT.commercial(2008, 5, 11)
 			}.should.not.raise
 		end
+
+		it 'should be able to create a civil date with time'
+		it 'should be able to create an ordinal date with time'
+		it 'should be able to create a commercial date with time'
 
 		describe '::iso_8601' do
 			it 'Should parse YYYY-MM-DD>T<HH:MM:SS±HH:SS correctly' do
@@ -44,7 +48,58 @@ describe 'Chronos::Datetime::Gregorian' do
 				result.offset.seconds.should.equal 7200
 			end
 		end
-	end # describe creating
+	end
+	
+	describe 'creating invalid dates' do
+		it 'should raise with an invalid month'
+		it 'should raise with an invalid day of month'
+		it 'should raise with an invalid week'
+		it 'should raise with an invalid day of week'
+		it 'should raise with an invalid day of year'
+		it 'should raise with a non integral value for year'
+		it 'should raise with a non integral value for month'
+		it 'should raise with a non integral value for week'
+		it 'should raise with a non integral value for day of year'
+		it 'should raise with a non integral value for day of month'
+		it 'should raise with a non integral value for day of week'
+	end
+	
+	describe 'a created datetimes attributes' do
+		it 'should have a year attribute, returning an Integer'
+		it 'should have a month attribute, returning an Integer'
+		it 'should have a week attribute, returning an Integer'
+		it 'should have a day (day of month) attribute, returning an Integer'
+		it 'should have a day_of_year attribute, returning an Integer'
+		it 'should have a day_of_month attribute, returning an Integer'
+		it 'should have a day_of_week attribute, returning an Integer'
+		it 'should have an hour attribute, returning an Integer'
+		it 'should have a minute attribute, returning an Integer'
+		it 'should have a second attribute, returning an Integer'
+		it 'should have a millisecond attribute, returning an Integer'
+		it 'should have a microsecond attribute, returning an Integer'
+		it 'should have a nanosecond attribute, returning an Integer'
+		it 'should have a picosecond attribute, returning an Integer'
+		it 'should have a month_name attribute, returning a String'
+		it 'should have a day_name attribute, returning a String'
+		it 'should have an offset attribute, returning a Duration::Gregorian'
+	end
+	
+	describe 'format' do
+		it 'should format localized month-names with %%A'
+		it 'should format localized day-names %%B'
+		it 'should format 4-digit years with %%4y and %%y'
+		it 'should format 2-digit years with %%2y'
+		it 'should format months with %%m'
+		it 'should format day of month with %%d'
+		it 'should format week (iso 8601) with %%w'
+		it 'should format day of week with %%'
+		it 'should format 2-digit months zero padded with %%0m'
+		it 'should format 2-digit months space padded with %%0m'
+	end
+	
+	describe 'succeeding method' do
+	end
+	
 
 =begin
 	describe 'consistency in advanding, creation and values'
