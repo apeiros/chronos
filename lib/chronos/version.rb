@@ -11,7 +11,7 @@ begin; require 'rubygems'; rescue LoadError; end
 
 
 module Chronos
-	version = '1.0.0'.freeze
+	version = '0.1.0'.freeze
 
 	if Object.const_defined?(:Gem) && Gem.const_defined?(:Version) then
 		VERSION = Gem::Version.new(version)
