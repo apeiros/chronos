@@ -33,12 +33,6 @@ module Chronos
 				limit_a > limit_b ? new(limit_b, limit_a, false, :begin) : new(limit_a, limit_b, false, :begin)
 			end
 	
-			# create a new interval that lasts from start_date until end_date
-			# === Arguments
-			# limit_a:: one of the two limiting datetimes
-			# limit_b:: the other of the two limiting datetimes
-			# fixated:: which end to fixate for operations. Defaults to :begin, valid values are:
-			#  :begin:: The smaller datetime is fixated
 			def initialize(limit_a, limit_b, fixed=nil)
 				super(limit_a, limit_b, fixed)
 				picoseconds       = @end.ps_number - @begin.ps_number if @begin.time?
