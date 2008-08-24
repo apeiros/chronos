@@ -13,63 +13,63 @@ module Chronos
 	# seconds (and therefore minutes, hours, days, weeks).
 	# That opens up the possibility to say how
 	class Interval
-		attr_reader :begin, :end, :fixed
+		ValidFixed        = [:begin, :end].freeze
+		InspectFixedBegin = "<%p [%p] - %p, %p>".freeze
+		InspectFixedEnd   = "<%p %p - [%p], %p>".freeze
 
-		# unlike new, between doesn't care about what date is before the other,
-		# it will switch them if date1 > date2
-		def self.between(date1, date2)
-			date1 > date2 ? new(date2, date1) : new(date1, date2)
+		# The smaller of the two datetimes
+		attr_reader :begin
+		
+		# The bigger of the two datetimes
+		attr_reader :end
+		
+		# Which end is fixed, plays a role when adding, subtracting, multiplying, dividing, ...
+		attr_reader :fixed
+
+		# unlike new, between always creates a positive interval
+		# it will switch limit_a and limit_b if limit_a > limit_b
+		# it always fixates :begin
+		def self.between(limit_a, limit_b)
+			limit_a > limit_b ? new(limit_b, limit_a, false, :begin) : new(limit_a, limit_b, false, :begin)
 		end
 
 		# create a new interval that lasts from start_date until end_date
-		# start_date *must* be <= end_date
-		def initialize(start_date, end_date, fixed=:begin)
-			raise ArgumentError, "begin after end" if start_date > end_date
-			raise ArgumentError, "begin not same signature as end" unless start_date.time? == end_date.time? and start_date.date? == end_date.date?
-			raise ArgumentError, "invalid fixed, must be :begin or :end" unless fixed == :begin or fixed == :end or fixed.nil?
-
-			@begin = start_date
-			@end   = end_date
+		# === Arguments
+		# limit_a:: one of the two limiting datetimes
+		# limit_b:: the other of the two limiting datetimes
+		# fixated:: which end to fixate for operations. Defaults to :begin, valid values are:
+		#  :begin:: The smaller datetime is fixated
+		def initialize(limit_a, limit_b, fixed=nil)
 			@fixed = fixed || :begin
+			raise ArgumentError, "limites don't have the same signature" unless (limit_a.time? == limit_b.time? && limit_a.date? == limit_b.date?)
+			raise ArgumentError, "invalid fixed, must be :begin or :end" unless ValidFixed.include?(@fixed)
 
-			seconds = start_date.time? ? start_date.second_number - end_date.second_number : 0
-			seconds_in_months = 0
+			@language = limit_a.language
 
-			if start_date.date? then
-				a, b     = Datetime.new(@begin.day_number,nil), Datetime.new(@end.day_number,nil)
-				seconds += (b.day_number - a.day_number)*86400
-				bsd      = a.day_of_month > b.day_of_month ||
-				           (start_date.time? && a.day_of_month == b.day_of_month && seconds < 0)
-				month1   = a.year*12+a.month+(bsd ? 1 : 0)
-				month2   = b.year*12+b.month
-				months   = month2 - month1
-				a2y,a2m  = *(month1-1).divmod(12)
-				a, b     = Datetime.civil(a2y, a2m+1, 1), Datetime.civil(b.year, b.month, 1)
-
-				seconds_in_months = (b.day_number-a.day_number)*86400
-				p [seconds, seconds_in_months]
-				seconds -= seconds_in_months
-
-				b2y,b2m  = *(month1+(months.div(12)*12)).divmod(12)
-				b        = Datetime.civil(b2y, b2m+1, 1)
-				seconds_in_years = (b.day_number-a.day_number)*86400
+			if limit_a > limit_b then
+				@begin    = limit_b
+				@end      = limit_a
+				@negative = false
+			else
+				@begin    = limit_a
+				@end      = limit_b
+				@negative = true
 			end
 
-			@seconds_in_years  = seconds_in_years
-			@seconds_in_months = seconds_in_months
-			@seconds = seconds
-			@months  = months
+			overflow    = 0
+			picoseconds = @end.ps_number  - @begin.ps_number  if @begin.time?
+			days        = @end.day_number - @begin.day_number if @begin.date?
+			overflow, picoseconds = *picoseconds.divmod(PS_IN_DAY) if @begin.time?
+			@duration = Duration.new(days+overflow, picoseconds, @language)
 		end
 
-		# returns the same interval but with begin as fixpoint for math ops
-		# like +, -, *, /
-		def fix_begin
+		# Returns the same Interval but with begin as fixpoint for operations
+		def fixed_begin
 			self.class.new(@begin, @end, :begin)
 		end
 
-		# returns the same interval but with end as fixpoint for math ops
-		# like +, -, *, /
-		def fix_end
+		# Returns the same interval but with end as fixpoint for operations
+		def fixed_end
 			self.class.new(@begin, @end, :end)
 		end
 
@@ -92,131 +92,40 @@ module Chronos
 			end
 		end
 
-		# multiplies the primitives (seconds and months) of the
-		# inherent duration and creates a new Interval from that and
-		# the fixed end
-		def *(numeric)
-			if @fixed == :begin then
-				self.class.new(@begin, @begin+to_duration*numeric, @fixed)
-			else
-				self.class.new(@end-to_duration*numeric, @end, @fixed)
-			end
+		# The number of picoseconds
+		def picoseconds
+			@duration.picoseconds
 		end
-
-		# divides the primitives (seconds and months) of the
-		# inherent duration and creates a new Interval from that and
-		# the fixed end
-		def *(numeric)
-			if @fixed == :begin then
-				self.class.new(@begin, @begin+to_duration/numeric, @fixed)
-			else
-				self.class.new(@end-to_duration/numeric, @end, @fixed)
-			end
-		end
-
-		# 0..Inf,  Integer
-		def seconds
-			@seconds + @seconds_in_months
-		end
-
-		# 0...60,  Integer
-		def seconds_after_minutes
-			(@seconds + @seconds_in_months)%60
-		end
-
-		# 0..Inf,  Rational (seconds included)
-		def minutes
-			(@seconds + @seconds_in_months).quo(60)
-		end
-
-		# 0...60,  Rational (seconds included)
-		def minutes_after_hours
-			((@seconds + @seconds_in_months)%3600).quo(60)
-		end
-
-		# 0..Inf,  Rational (minutes and seconds included)
-		def hours
-			(@seconds + @seconds_in_months).quo(3600)
-		end
-
-		# 0...24,  Rational (minutes and seconds included)
-		def hours_after_days
-			((@seconds + @seconds_in_months)%86400).quo(3600)
-		end
-
-		# 0..Inf,  Rational (minutes and seconds included)
+		
 		def days
-			(@seconds + @seconds_in_months).quo(86400)
+			@duration.days
 		end
-
-		# 0...7,   Rational (smaller units included)
-		def days_after_weeks
-			((@seconds + @seconds_in_months)%604800).quo(86400)%7
-		end
-
-		# 0...31,  Rational (smaller units included)
-		def days_after_months
-			@seconds.quo(86400)
-		end
-
-		# example:
-		#   birthsday = Chronos::Datetime.civil(year, month, day)
-		#   interval  = Chronos::Datetime.today - birthsday
-		#   puts "Days since your last birthsday: #{interval.days_after_years.floor}"
-		# 0...366, Rational (smaller units included)
-		def days_after_years
-			(@seconds + @seconds_in_months - @seconds_in_years).quo(86400)
-		end
-
-		# 0..Inf,  Rational (smaller units included)
-		def weeks
-			(@seconds + @seconds_in_months).quo(604800)
-		end
-
-		# 0...5,    Rational (smaller units included)
-		def weeks_after_months
-			days_after_months.quo(7)
-		end
-
-		# 0...53
-		def weeks_after_years
-			days_after_years.quo(7)
-		end
-
-		# 0..Inf,  total months, Integer
-		def months
-			@months
-		end
-
-		# 0...12,  Integer
-		def months_after_years
-			@months%12
-		end
-
-		# 0..Inf,  Rational (months included)
-		def years
-			@months.quo(12)
+		
+		def values_at(*keys)
+			to_hash.values_at(*keys)
 		end
 
 		# converts this interval to a duration
 		# if you set as_seconds to true it will convert the
 		# month primitive to seconds and use that
-		def to_duration(as_seconds=false)
-			if as_seconds then
-				Duration.new(@seconds + @seconds_in_months)
-			else
-				Duration.new(@seconds, @months)
-			end
+		def to_duration
+			@duration
 		end
 
-		# [...] sequences may include a single replacement. if that replacement is 0, the whole segment is omitted
-		# [...>] sequences work the same, but are not omitted if there are optional replacements on the right side that haven't been omitted
-		def format(string="[%{full_years} years >][%{months_after_years} months >][%{days_after_months} days >][%{hours_after_days}h>]%{minutes_after_hours}m>]%{seconds_after_minutes}s")
+		def to_hash
+			@duration.to_hash.merge(:begin => @begin, :end => @end, :language => @language)
+		end
 
+		def format(string)
+			raise NoMethodError
 		end
 
 		def inspect
-			"<Interval #{@begin} - #{@end}, @months=#{@months}, @seconds=#{@seconds}>"
+			if @fixed == :begin then
+				sprintf InspectFixedBegin, self.class, @begin, @end, @duration
+			else
+				sprintf InspectFixedEnd, self.class, @begin, @end, @duration
+			end
 		end
 	end
 end
