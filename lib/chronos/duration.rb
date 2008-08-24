@@ -26,6 +26,10 @@ module Chronos
 				parts[:language]
 			)
 		end
+		
+		def self.import(duration)
+			duration.to_duration
+		end
 
 		attr_reader :days
 		attr_reader :picoseconds
