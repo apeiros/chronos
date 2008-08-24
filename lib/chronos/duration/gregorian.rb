@@ -114,6 +114,10 @@ module Chronos
 				new(months, days, ps, parts[:language])
 			end
 			
+			def self.import(duration)
+				duration.respond_to?(:to_gregorian_duration) duration.to_gregorian_duration : super
+			end
+			
 			# seconds+months
 			def initialize(months, days, picoseconds, language=nil)
 				super(days, picoseconds, language)
@@ -171,7 +175,15 @@ module Chronos
 			def centuries
 				@months.quo(1200)
 			end
-						
+			
+			def to_duration
+				Duration.new(@days, @picoseconds, @language)
+			end
+			
+			def to_gregorian_duration
+				self
+			end
+			
 			def to_a(exclude_language=nil)
 				exclude_language ? [@picoseconds, @months] : [@picoseconds, @months, @language]
 			end
