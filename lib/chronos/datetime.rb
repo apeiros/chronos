@@ -233,7 +233,7 @@ module Chronos
 			if other.respond_to?(:to_duration) then
 				self+(-other)
 			else
-				Interval.between(self, self.class.import(other))
+				Interval.new(self, self.class.import(other))
 			end
 		end
 
