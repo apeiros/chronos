@@ -1,5 +1,6 @@
 = BUGS
-
+* Datetime with timezones having positive offsets picoseconds becomes negative and days & overflow
+  are wrong
 
 = TODO
 == Pre-Release
