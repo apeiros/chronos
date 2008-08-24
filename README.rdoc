@@ -1,26 +1,39 @@
 = Chronos
 
+
+
 == INDEXING
 Name::             Chronos
 Gem::              chronos
 Summary::          Library to deal with Date, Time, Durations and Intervals.
 Author::           Stefan Rusterholz <stefan.rusterholz+chronos at gmail.com>
-Version::          0.1.0
+Version::          0.1.1
 Website::          http://chronos.rubyforge.org/
 Git Repository::   http://github.com/apeiros/chronos
-Bugtracker::       -
-Feature Requests:: -
+Bugtracker::       http://rubyforge.org/tracker/?atid=25774&group_id=6649&func=browse
+Feature Requests:: http://rubyforge.org/tracker/?atid=25777&group_id=6649&func=browse
 License::          Ruby License (see LICENSE.txt)
 
-== DESCRIPTION
-Chronos is a library that lets you easily deal with various kinds of calcutations
+
+
+== SUMMARY
+Chronos is a library that lets you easily deal with various kinds of calculations
 with dates, times, durations and intervals.
+
+
+
+== DESCRIPTION
+(none yet)
+
+
 
 == IMPORTANT
 Date, Time and Duration don't satisfy usual algebraic laws. Many operations are a
 matter of definition. It is very likely that your expectation might be broken at
 some points. Read the NOTES.rdoc for ambiguous cases and how they are solved in
 Chronos.
+
+
 
 == INSTALLING
 === Via RubyGems
@@ -67,8 +80,10 @@ To install, do:
 Note: you might have to use 'sudo rake gem:install'
 
 
+
 == EXAMPLES
-See in the examples dir for code examples.
+See in the examples directory for code examples.
+
 
 
 == DESIGN
@@ -93,4 +108,18 @@ different representations of the same month.
 So Datetime and all its subclasses store date and time without representational offsets, those
 are only respected when accessing calendary-specific values, such as month, day, hour etc.
 
+
+
+== CREDITS
+Yukihiro "Matz" Matsumoto:: For ruby
+Jarrett C.:: Helping with the C implementation
+Various People:: For rubygems, rake, all the support in #ruby-lang, #ruby-pro and the ruby-talk ML
+
+
+
 == LINKS
+Website::           http://chronos.rubyforge.org/
+Git Repository::    http://github.com/apeiros/chronos
+Report a bug::      http://rubyforge.org/tracker/?func=add&group_id=6649&atid=25774
+Request a feature:: http://rubyforge.org/tracker/?func=add&group_id=6649&atid=25777
+ISO 8601::          http://en.wikipedia.org/wiki/ISO_8601
