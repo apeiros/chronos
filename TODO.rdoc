@@ -11,6 +11,8 @@
 * Complete minimal docs
 
 == Low priority
+* Verify all rake tasks
+* Fix gem rake task (must validate manifest and version)
 * Rake task to help localization
 * Spec to test completeness of localizations
 * Write extensive parsing suite, there should be 4 kinds of parsers:
