@@ -139,10 +139,13 @@ module BoneSplitter
 	end
 	
 	def manifest_candidates
-		cands = Dir['**/*']
-		if Project.manifest.ignore then
-			Project.manifest.ignore.map { |glob| cands -= Dir[glob] }
+		cands = Array(Project.manifest.include || '**/*').inject([]) { |a,e| a+Dir[e] }
+
+		# remove all that are to exclude
+		if Project.manifest.exclude then
+			Project.manifest.exclude.map { |glob| cands -= Dir[glob] }
 		end
+		# remove all directories
 		cands - Dir['**/*/'].map { |e| e.chop }
 	end
 
@@ -158,7 +161,7 @@ module BoneSplitter
 		return nil unless File.readable?(file)
 		case File.extname(file)
 			when '.rdoc'
-				File.read('README.rdoc')[/^(\s*=+)\s+Summary\b.*?\n(.*?)\n\1/m, 2]
+				File.read('README.rdoc')[/^(\s*=+)\s+SUMMARY\b.*?\n(.*?)\n\1/m, 2]
 			when '.markdown'
 				return nil unless lib?(%w'hpricot markdown', "Requires %s to extract the summary")
 				html = Markdown.new(File.read(file)).to_html
@@ -174,7 +177,7 @@ module BoneSplitter
 		return nil unless File.readable?(file)
 		case File.extname(file)
 			when '.rdoc'
-				File.read('README.rdoc')[/^(\s*=+)\s+Description\b.*?\n(.*?)\n\1/m, 2]
+				File.read('README.rdoc')[/^(\s*=+)\s+DESCRIPTION\b.*?\n(.*?)\n\1/m, 2]
 			when '.markdown'
 				return nil unless lib?('hpricot markdown', "Requires %s to extract the summary")
 				html = Markdown.new(File.read(file)).to_html

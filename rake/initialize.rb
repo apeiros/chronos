@@ -63,7 +63,8 @@ Project.meta = ProjectClass.new({
 
 # Manifest
 Project.manifest = ProjectClass.new({
-	:ignore     => nil,
+	:include    => %w[**/*],
+	:exclude    => %w[dev/**/* docs/**/* pkg/**/* web/**/*],
 })
 
 # File Annotations
