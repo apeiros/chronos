@@ -7,11 +7,6 @@ README.rdoc
 Rakefile
 TODO.rdoc
 bench/completebench.rb
-ext/chronos_core/Makefile
-ext/chronos_core/chronos_core.bundle
-ext/chronos_core/chronos_core.c
-ext/chronos_core/chronos_core.o
-ext/chronos_core/extconf.rb
 lib/chronos.rb
 lib/chronos/calendar.rb
 lib/chronos/calendar/gregorian.rb
