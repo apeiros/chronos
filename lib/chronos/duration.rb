@@ -19,15 +19,21 @@ module Chronos
 		FormatToS     = "%dps (%s)".freeze
 		FormatInspect = "#<%s:0x%08x %dps (%s)>".freeze
 
-		def self.with(parts, lang)
-			new(parts[:picoseconds] || parts[:ps] || 0)
+		def self.with(parts)
+			new(
+				parts[:days] || parts[:d] || 0,
+				parts[:picoseconds] || parts[:ps] || 0,
+				parts[:language]
+			)
 		end
-		
+
+		attr_reader :days
 		attr_reader :picoseconds
 		attr_reader :language
 		
 		# Create a Duration of given picoseconds length
-		def initialize(picoseconds, language=nil)
+		def initialize(days, picoseconds, language=nil)
+			@days        = days
 			@picoseconds = picoseconds
 			@language    = Chronos.language(language)
 		end
@@ -35,7 +41,7 @@ module Chronos
 		def +@
 			self
 		end
-		
+
 		def -@
 			self.class.new(*(self.to_a(true).map { |e| -e }+[@language]))
 		end
@@ -84,11 +90,17 @@ module Chronos
 		
 		# An array with the atomic units and the language of this Duration
 		def to_a(exclude_language=nil)
-			exclude_language ? [@picoseconds] : [@picoseconds, @language]
+			exclude_language ? [@days, @picoseconds] : [@days, @picoseconds, @language]
 		end
 		
 		def to_hash
-			{:ps => @picoseconds, :picoseconds => @picoseconds}
+			{
+				:days        => @days,
+				:d           => @days,
+				:ps          => @picoseconds,
+				:picoseconds => @picoseconds,
+				:language    => @language,
+			}
 		end
 		
 		def to_duration
