@@ -25,7 +25,9 @@ Project.meta.bugtracker       = 'http://'
 Project.meta.feature_requests = 'http://'
 Project.meta.use_git          = true
 
-Project.manifest.exclude     += %w[ext/cchronos/**/*]
+# TODO: remove chronos_core from this list later
+Project.manifest.exclude     += %w[ext/cchronos/**/* ext/chronos_core/**/*]
+
 Project.rdoc.exclude         += %w[lib/**/*.yaml ext/**/*]
 
 Project.rubyforge.project     = 'chronos'
