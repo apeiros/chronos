@@ -203,5 +203,6 @@ module Chronos
 
 	self.language = ENV['LANG'] || 'en_US'
 	self.timezone = Time.now.strftime("%Z")
+	UTC           = Chronos.timezone('UTC')
 	@calendar     = nil
 end
