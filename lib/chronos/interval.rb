@@ -37,8 +37,9 @@ module Chronos
 		# === Arguments
 		# limit_a:: one of the two limiting datetimes
 		# limit_b:: the other of the two limiting datetimes
-		# fixated:: which end to fixate for operations. Defaults to :begin, valid values are:
-		#  :begin:: The smaller datetime is fixated
+		# fixated:: which end to fixate for operations. Defaults to :begin, valid values are (Symbols):
+		#   begin:: The smaller datetime is fixated
+		#   end:: The smaller datetime is fixated
 		def initialize(limit_a, limit_b, fixed=nil)
 			@fixed = fixed || :begin
 			raise ArgumentError, "limites don't have the same signature" unless (limit_a.time? == limit_b.time? && limit_a.date? == limit_b.date?)
