@@ -28,9 +28,9 @@ module Chronos
 		#   dtz = Datetime.civil(y, m, d).at(hour, min, sec).in("Europe/Zurich", "de-de")
 		#   datetime = Datetime.ordinal(year, day_of_year).at(0,0).in("UTC+1", "en-us")
 		class Gregorian < ::Chronos::Datetime
-			ISO_8601_Datetime = "%04d-%02d-%02dT%02d:%02d:%02d-%02d:%02d".freeze
+			ISO_8601_Datetime = "%04d-%02d-%02dT%02d:%02d:%02d%s%02d:%02d".freeze
 			ISO_8601_Date     = "%04d-%02d-%02d".freeze
-			ISO_8601_Time     = "%02d:%02d:%02d-%02d:%02d".freeze
+			ISO_8601_Time     = "%02d:%02d:%02d%s%02d:%02d".freeze
 			Inspect           = "#<%s %s (%p, %p)>".freeze
 
 			DAYS_IN_MONTH1    = [0,31,28,31,30,31,30,31,31,30,31,30,31].freeze
@@ -676,12 +676,12 @@ module Chronos
 			def to_s
 				if @day_number then
 					if @ps_number then
-						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, *(@offset/60).floor.divmod(60)
+						sprintf ISO_8601_Datetime, year, month, day, hour, minute, second, @offset < 0 ? '-' : '+', *(@offset/60).floor.divmod(60)
 					else
 						sprintf ISO_8601_Date, year, month, day
 					end
 				else
-					sprintf ISO_8601_Time, hour, minute, second, *(@offset/60).floor.divmod(60)
+					sprintf ISO_8601_Time, hour, minute, second, @offset < 0 ? '-' : '+', *(@offset/60).floor.divmod(60)
 				end
 			end
 
