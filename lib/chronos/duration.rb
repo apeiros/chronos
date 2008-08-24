@@ -16,8 +16,8 @@ module Chronos
 	# A duration has no start- nor end-point.
 	# Also see Interval
 	class Duration
-		FormatToS     = "%dps (%s)".freeze
-		FormatInspect = "#<%s:0x%08x %dps (%s)>".freeze
+		FormatToS     = "%dd %dps (%s)".freeze
+		FormatInspect = "#<%s:0x%08x %dd %dps (%s)>".freeze
 
 		def self.with(parts)
 			new(
@@ -35,10 +35,18 @@ module Chronos
 		attr_reader :picoseconds
 		attr_reader :language
 		
+		def self.days(n, language=nil)
+			new(n, 0, language)
+		end
+		
+		def self.seconds(n, language=nil)
+			new(0, n*PS_IN_SECOND, language)
+		end
+		
 		# Create a Duration of given picoseconds length
 		def initialize(days, picoseconds, language=nil)
-			@days        = days
-			@picoseconds = picoseconds
+			@days, @picoseconds = *picoseconds.divmod(PS_IN_DAY)
+			@days += days
 			@language    = Chronos.language(language)
 		end
 
