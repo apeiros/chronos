@@ -7,29 +7,58 @@ require 'time'
 require 'date'
 require 'chronos/datetime'
 
+Chronos.timezone = 'UTC'
+Chronos.language = 'en_US'
+
 describe 'Chronos::Datetime' do
-	it '::today should create an instance representing current date' do
-		proc { Chronos::Datetime.today }.should.not.raise
+	describe 'Chronos::Datetime::today' do
+		it 'should create an instance representing current date' do
+			proc { Chronos::Datetime.today }.should.not.raise
+		end
+	end
+	
+	describe 'Chronos::Datetime::now' do
+		it 'should create an instance representing current date and time' do
+			proc { Chronos::Datetime.now }.should.not.raise
+		end
 	end
 
-	it '::now should create an instance representing current date and time' do
-		proc { Chronos::Datetime.now }.should.not.raise
-	end
+	describe 'Chronos::Datetime::import' do
+		it 'should import Datetime instances' do
+			proc { Chronos::Datetime.import(Chronos::Datetime.now) }.should.not.raise
+		end
 
-	it 'should import Datetime instances' do
-		proc { Chronos::Datetime.import(Chronos::Datetime.now) }.should.not.raise
-	end
+		it 'should import Time instances' do
+			proc { Chronos::Datetime.import(Time.now) }.should.not.raise
+		end
 
-	it 'should import Time instances' do
-		proc { Chronos::Datetime.import(Time.now) }.should.not.raise
-	end
+		it 'should import Date instances' do
+			proc { Chronos::Datetime.import(Date.today) }.should.not.raise
+		end
 
-	it 'should import Date instances' do
-		proc { Chronos::Datetime.import(Date.today) }.should.not.raise
+		it 'should import DateTime instances' do
+			proc { Chronos::Datetime.import(DateTime.now) }.should.not.raise
+		end
 	end
+	
+	describe 'Chronos::Datetime#+' do
+		it 'should accept a duration' do
+			proc { Chronos::Datetime.now+Chronos::Duration.new(3,0) }.should.not.raise
+		end
 
-	it 'should import DateTime instances' do
-		proc { Chronos::Datetime.import(DateTime.now) }.should.not.raise
+		it 'should advance by 3 days if a duration of 3 days is added' do
+			dt = Chronos::Datetime.new(733000,nil,nil,nil)
+			dr = Chronos::Duration.new(3,0)
+			rs = dt+dr
+			rs.day_number.should == 733003
+		end
+
+		it 'should retreat by 3 days if a duration of 3 days is subtracted' do
+			dt = Chronos::Datetime.new(733000,nil,nil,nil)
+			dr = Chronos::Duration.new(3,0)
+			rs = dt-dr
+			rs.day_number.should == 732997
+		end
 	end
 end
 
