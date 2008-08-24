@@ -19,6 +19,7 @@ module Chronos
 		class Gregorian < ::Chronos::Duration
 			FormatToS     = "%dps %d months (%s)".freeze
 			FormatInspect = "#<%s:0x%08x %dps %d months (%s)>".freeze
+			ShortTime     = ["%d".freeze, "%02d".freeze, "%02d".freeze, "%02d".freeze].freeze
 
 			# if you want to estimate minimum seconds in months
 			MinSecondsInMonths = [
@@ -106,52 +107,53 @@ module Chronos
 					:nanoseconds,
 					:picoseconds
 				)
-				seconds = s+min*60+h*3600+d*86400+w*604800
-				ps     += seconds*1_000_000_000_000+ms*1_000_000_000+us*1_000_000+ns*1_000
-				months  = m+y*12
-				new(ps, months, parts[:language])
+				seconds  = s+min*60+h*3600+d*86400+w*604800
+				ps      += seconds*1_000_000_000_000+ms*1_000_000_000+us*1_000_000+ns*1_000
+				days, ps = ps.divmod(PS_IN_DAY)
+				months   = m+y*12
+				new(months, days, ps, parts[:language])
 			end
 			
 			# seconds+months
-			def initialize(picoseconds, months=0, language=nil)
-				super(picoseconds, language)
+			def initialize(months, days, picoseconds, language=nil)
+				super(days, picoseconds, language)
 				@months = months
 			end
 
 			def picoseconds(after=nil)
-				after ? picoseconds%After[[:picoseconds, after]] : @picoseconds
+				after ? picoseconds%After[[:picoseconds, after]] : @picoseconds+@days*PS_IN_DAY
 			end
 
 			def nanoseconds(after=nil)
-				after ? nanoseconds%After[[:nanoseconds, after]] : @picoseconds.quo(PS_IN_NANOSECOND)
+				after ? nanoseconds%After[[:nanoseconds, after]] : picoseconds.quo(PS_IN_NANOSECOND)
 			end
 
 			def microseconds(after=nil)
-				after ? microseconds%After[[:microseconds, after]] : @picoseconds.quo(PS_IN_MICROSECOND)
+				after ? microseconds%After[[:microseconds, after]] : picoseconds.quo(PS_IN_MICROSECOND)
 			end
 
 			def milliseconds(after=nil)
-				after ? milliseconds%After[[:milliseconds, after]] : @picoseconds.quo(PS_IN_MILLISECOND)
+				after ? milliseconds%After[[:milliseconds, after]] : picoseconds.quo(PS_IN_MILLISECOND)
 			end
 
 			def seconds(after=nil)
-				after ? seconds%After[[:seconds, after]] : @picoseconds.quo(PS_IN_SECOND)
+				after ? seconds%After[[:seconds, after]] : picoseconds.quo(PS_IN_SECOND)
 			end
 			
 			def minutes(after=nil)
-				after ? minutes%After[[:minutes, after]] : @picoseconds.quo(PS_IN_MINUTE)
+				after ? minutes%After[[:minutes, after]] : picoseconds.quo(PS_IN_MINUTE)
 			end
 			
 			def hours(after=nil)
-				after ? hours%After[[:hours, after]] : @picoseconds.quo(PS_IN_HOUR)
+				after ? hours%After[[:hours, after]] : picoseconds.quo(PS_IN_HOUR)
 			end
 	
 			def days(after=nil)
-				after ? days%After[[:days, after]] : @picoseconds.quo(PS_IN_DAY)
+				after ? days%After[[:days, after]] : picoseconds.quo(PS_IN_DAY)
 			end
 	
 			def weeks
-				@picoseconds.quo(PS_IN_WEEK)
+				picoseconds.quo(PS_IN_WEEK)
 			end
 			
 			def months(after=nil)
@@ -162,6 +164,14 @@ module Chronos
 				@months.quo(12)
 			end
 			
+			def decades
+				@months.quo(144)
+			end
+
+			def centuries
+				@months.quo(1200)
+			end
+						
 			def to_a(exclude_language=nil)
 				exclude_language ? [@picoseconds, @months] : [@picoseconds, @months, @language]
 			end
@@ -181,6 +191,26 @@ module Chronos
 					:picoseconds  => @picoseconds,
 					:language     => @language,
 				}
+			end
+			
+			# Return a String in form of DDD:HH:MM:SS.fff
+			# fraction_digits:: How many digits to display after the ., defaults to 0
+			# num_elements::    How many elements to display at least
+			#  * 1 is only SS
+			#  * 2 is MM:SS
+			#  * 3 is HH:MM:SS
+			#  * 4 is DDD:HH:SS
+			def short_time(fraction_digits=nil, num_elements=nil)
+				elements = [
+					days.floor
+					hours(:days).floor,
+					minutes(:hours).floor,
+					seconds(:minutes)
+				]
+				elements.shift while (elements.size > num_elements && elements.first.first.zero?)
+				display = ShortTime[-elements.size..-1]
+				display[-1] = "%#{fraction_digits+3}.#{fraction_digits}f" if (fraction_digits && fraction_digits > 0)
+				sprintf(display.join(":"), *elements)
 			end
 			
 			# return a readable representation
