@@ -168,7 +168,7 @@ module Chronos
 
 		# add a/modify the time component to/of a date only datetime
 		def at(hour, minute=0, second=0, fraction=0.0)
-			Datetime.new(
+			self.class.new(
 				@day_number,
 				(hour*3600+minute*60+second+fraction)*1_000_000_000_000,
 				@timezone,
@@ -188,26 +188,26 @@ module Chronos
 				overflow  = 0
 				ps_number = @ps_number
 			end
-			Datetime.new(@day_number+overflow, second_number, timezone, language)
+			self.class.new(@day_number+overflow, ps_number, timezone, language)
 		end
 		
 		# Change to another timezone, also gives the opportunity to change language
 		def change_zone(timezone=nil, language=nil)
 			timezone ||= @timezone
 			timezone = Zone[timezone] unless timezone.kind_of?(Zone)
-			Datetime.new(@day_number, @ps_number, timezone, language)
+			self.class.new(@day_number, @ps_number, timezone, language)
 		end
 
 		# returns a date-only datetime from this
 		def strip_time
 			raise TypeError, "This Datetime does not contain a date" unless @day_number
-			Datetime.new(@day_number+@overflow, nil, @timezone, @language)
+			self.class.new(@day_number+@overflow, nil, @timezone, @language)
 		end
 
 		# returns a time-only datetime from this
 		def strip_date
 			raise TypeError, "This Datetime does not contain a time" unless @ps_number
-			Datetime.new(nil, @ps_number, @timezone, @language)
+			self.class.new(nil, @ps_number, @timezone, @language)
 		end
 
 		# You can add a Duration
