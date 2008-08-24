@@ -39,10 +39,10 @@ module Chronos
 			]
 			# if you want to estimate maximum seconds in months
 			MaxSecondsInMonths = [
-				0,       # 0 days
-				2678401, # 31 days + leapsecond (june/december)
-				5356800, # 62 days (july, august)
-				7948801, # 92 days + leapsecond (june, july, august)
+				0,        # 0 days
+				2678401,  # 31 days + leapsecond (june/december)
+				5356800,  # 62 days (july, august)
+				7948801,  # 92 days + leapsecond (june, july, august)
 				10627201, # 123 days + leapsecond
 				13219201,
 				15897601,
