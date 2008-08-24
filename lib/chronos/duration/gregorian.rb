@@ -115,7 +115,7 @@ module Chronos
 			end
 			
 			def self.import(duration)
-				duration.respond_to?(:to_gregorian_duration) duration.to_gregorian_duration : super
+				duration.respond_to?(:to_gregorian_duration) ? duration.to_gregorian_duration : super
 			end
 			
 			# seconds+months
@@ -214,7 +214,7 @@ module Chronos
 			#  * 4 is DDD:HH:SS
 			def short_time(fraction_digits=nil, num_elements=nil)
 				elements = [
-					days.floor
+					days.floor,
 					hours(:days).floor,
 					minutes(:hours).floor,
 					seconds(:minutes)
