@@ -77,7 +77,7 @@ module Chronos
 
 		# map old/military timezone names to UTC
 		# corresponding utc, isDST[BOOL]
-		Map	= Hash.new { |hash, key| key }.merge!({
+		Map	= {
 			# for ::DateTime
 			'-12:00'   => ['utc-12',   false],
 			'-11:00'   => ['utc-11',   false],
@@ -145,6 +145,7 @@ module Chronos
 			'cet'      => ['utc+1',    false],
 			'cest'     => ['utc+1',    true],
 			'alpha'    => ['utc+1',    false],
+			'eet'      => ['utc+2',    false],
 			'bravo'    => ['utc+2',    false],
 			'msk'      => ['utc+3',    false],
 			'charlie'  => ['utc+3',    false],
@@ -161,7 +162,7 @@ module Chronos
 			'kilo'     => ['utc+10',   false],
 			'lima'     => ['utc+11',   false],
 			'mike'     => ['utc+12',   false]
-		})
+		}
 		
 		# load locations from a tabfile
 		def self.load(tabfile, marshalfile=nil, marshal=true)
